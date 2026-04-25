@@ -70,12 +70,15 @@ const state = {
   isCompiling: false,
   isDeploying: false,
   currentTemplate: 'storage',
+  farcasterUser: null, // { fid, username, displayName, pfpUrl }
 };
 
 const els = {
   connectBtn: document.getElementById('connect-btn'),
   networkPill: document.getElementById('network-pill'),
   walletPill: document.getElementById('wallet-pill'),
+  farcasterPill: document.getElementById('farcaster-pill'),
+  farcasterUsername: document.getElementById('farcaster-username'),
   connectionState: document.getElementById('connection-state'),
   walletAddress: document.getElementById('wallet-address'),
   walletChain: document.getElementById('wallet-chain'),
@@ -533,14 +536,23 @@ async function promptShare(projectName, contractAddress, txHash) {
     const explorerUrl = `${currentExplorerBase()}/address/${contractAddress}`;
     const chain = activeChain();
     
-    const text = `Just deployed ${projectName} on ${chain.label} 🚀⚡\n\nContract: ${shortAddress(contractAddress)}\n\nDeploy your own smart contract with a simple form.`;
+    // Build share text with user context if available
+    let text = `Just deployed ${projectName} on ${chain.label} 🚀⚡\n\n`;
+    
+    if (state.farcasterUser) {
+      text += `Built by @${state.farcasterUser.username}\n`;
+    }
+    
+    text += `Contract: ${shortAddress(contractAddress)}\n`;
+    text += `\nDeploy your own smart contract with a simple form — no Remix, no CLI, just fill and deploy.`;
     
     await sdk.actions.composeCast({
       text,
-      embeds: [appUrl, explorerUrl],
+      embeds: [explorerUrl, appUrl],
     });
     
     showToast('Cast composer opened', 'success');
+    log('info', 'Share dialog opened');
   } catch (error) {
     console.warn('Farcaster share unavailable:', error);
   }
@@ -575,12 +587,38 @@ function wireHistoryActions() {
   });
 }
 
+async function loadFarcasterContext() {
+  try {
+    const context = await sdk.context;
+    if (context?.user) {
+      state.farcasterUser = {
+        fid: context.user.fid,
+        username: context.user.username,
+        displayName: context.user.displayName,
+        pfpUrl: context.user.pfpUrl,
+      };
+      
+      // Show Farcaster user pill
+      els.farcasterUsername.textContent = `@${context.user.username}`;
+      els.farcasterPill.style.display = 'inline-flex';
+      
+      log('info', `Farcaster user: @${context.user.username} (fid: ${context.user.fid})`);
+      showToast(`Welcome @${context.user.username}!`, 'info');
+    }
+  } catch (error) {
+    console.warn('Farcaster context unavailable (fine outside Farcaster):', error);
+  }
+}
+
 async function init() {
   try {
     await sdk.actions.ready();
   } catch (error) {
     console.warn('sdk.actions.ready() failed (fine outside Farcaster):', error);
   }
+
+  // Load Farcaster user context
+  await loadFarcasterContext();
 
   renderWallet();
   renderHistory();
