@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deploy on Base</title>
+    <meta
+      name="description"
+      content="Mini Farcaster app to deploy smart contracts on Base with a Remix-like workflow, but a much simpler form-first UI."
+    />
+    <meta name="theme-color" content="#0b1020" />
+    <meta
+      name="fc:miniapp"
+      content='{"version":"1","imageUrl":"https://gyoomei.github.io/deploy-on-base/assets/og.svg","button":{"title":"Open Deploy on Base","action":{"type":"launch_frame","name":"Deploy on Base","url":"https://gyoomei.github.io/deploy-on-base/","splashImageUrl":"https://gyoomei.github.io/deploy-on-base/assets/icon.svg","splashBackgroundColor":"#0b1020"}}}'
+    />
+    <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
+    <link rel="preconnect" href="https://esm.sh" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.16.0/dist/ethers.umd.min.js"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #08111f;
+        --bg-2: #0d1728;
+        --panel: rgba(13, 23, 40, 0.92);
+        --panel-2: rgba(16, 29, 51, 0.95);
+        --line: rgba(148, 163, 184, 0.16);
+        --line-strong: rgba(79, 140, 255, 0.35);
+        --text: #e8eefc;
+        --muted: #93a4c7;
+        --accent: #4f8cff;
+        --accent-2: #79c0ff;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --danger: #fb7185;
+        --shadow: 0 20px 80px rgba(0, 0, 0, 0.35);
+        --radius: 20px;
+        --radius-sm: 14px;
+        --code: #d7e4ff;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        background:
+          radial-gradient(circle at top left, rgba(79, 140, 255, 0.18), transparent 28%),
+          radial-gradient(circle at top right, rgba(121, 192, 255, 0.12), transparent 22%),
+          linear-gradient(180deg, #09101d 0%, #07101b 100%);
+        color: var(--text);
+      }
+      button, input, textarea, select { font: inherit; }
+      button { cursor: pointer; }
+      .app {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        backdrop-filter: blur(16px);
+        background: rgba(7, 14, 26, 0.72);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.09);
+      }
+      .topbar-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 18px;
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+      .brand { display: flex; align-items: center; gap: 14px; }
+      .logo {
+        width: 44px; height: 44px; border-radius: 14px;
+        background: linear-gradient(145deg, rgba(79, 140, 255, 0.95), rgba(121, 192, 255, 0.8));
+        box-shadow: 0 16px 32px rgba(79, 140, 255, 0.28);
+        display: grid; place-items: center;
+        font-weight: 900; color: white;
+      }
+      .brand h1 { margin: 0; font-size: 16px; line-height: 1.1; }
+      .brand p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+      .top-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        color: var(--text);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .pill strong { font-weight: 700; }
+      .btn {
+        border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+        color: var(--text);
+        border-radius: 14px;
+        padding: 12px 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      }
+      .btn:hover { transform: translateY(-1px); border-color: rgba(79,140,255,0.45); }
+      .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+      .btn.primary {
+        background: linear-gradient(180deg, rgba(79,140,255,1), rgba(54,118,255,0.9));
+        border-color: rgba(79,140,255,0.8);
+        color: white;
+      }
+      .btn.ghost { background: rgba(255,255,255,0.03); }
+      .btn.small { padding: 9px 12px; border-radius: 12px; font-size: 13px; }
+      .layout {
+        max-width: 1600px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 18px;
+        flex: 1;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 340px minmax(0, 1fr) 360px;
+        gap: 16px;
+        min-height: calc(100vh - 106px);
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        min-width: 0;
+      }
+      .panel-header {
+        padding: 16px 16px 14px;
+        border-bottom: 1px solid rgba(148,163,184,0.12);
+        background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
+      }
+      .panel-header h2 { margin: 0; font-size: 15px; }
+      .panel-header p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+      .panel-body { padding: 16px; }
+      .stack { display: flex; flex-direction: column; gap: 14px; }
+      .field label { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; font-size: 13px; color: #c9d6f3; }
+      .field input, .field textarea, .field select {
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        color: var(--text);
+        padding: 13px 14px;
+        outline: none;
+        transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+      }
+      .field textarea { min-height: 120px; resize: vertical; }
+      .field input:focus, .field textarea:focus, .field select:focus {
+        border-color: rgba(79,140,255,0.75);
+        box-shadow: 0 0 0 4px rgba(79,140,255,0.12);
+        background: rgba(255,255,255,0.05);
+      }
+      .hint {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      .quick-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .quick {
+        padding: 12px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        color: var(--text);
+        text-align: left;
+      }
+      .quick strong { display: block; font-size: 13px; margin-bottom: 4px; }
+      .quick span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
+      .editor-wrap {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .editor-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .status-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .status.good { color: #bdf7cf; border-color: rgba(34,197,94,0.28); }
+      .status.warn { color: #ffd58a; border-color: rgba(245,158,11,0.3); }
+      .code-shell {
+        margin-top: 14px;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: #050915;
+        overflow: hidden;
+        flex: 1;
+        min-height: 0;
+      }
+      .code-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(148,163,184,0.12);
+        background: rgba(255,255,255,0.03);
+      }
+      .code-head strong { font-size: 13px; }
+      .code-head span { font-size: 12px; color: var(--muted); }
+      textarea.code {
+        display: block;
+        width: 100%;
+        height: calc(100% - 49px);
+        min-height: 520px;
+        background: transparent;
+        color: var(--code);
+        border: 0;
+        resize: none;
+        outline: none;
+        padding: 16px;
+        font-family: var(--mono);
+        font-size: 12.5px;
+        line-height: 1.6;
+        white-space: pre;
+      }
+      .console {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .wallet-card, .deploy-card, .history-card {
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        border-radius: 18px;
+        padding: 14px;
+      }
+      .wallet-top, .deploy-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .wallet-top h3, .deploy-top h3, .history-card h3 { margin: 0; font-size: 14px; }
+      .mini { font-size: 12px; color: var(--muted); }
+      .kv { display: grid; grid-template-columns: 1fr; gap: 10px; }
+      .kv-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(148,163,184,0.08);
+      }
+      .kv-row span:first-child { color: var(--muted); font-size: 12px; }
+      .kv-row code, .inline-code {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: #d5e1ff;
+        word-break: break-all;
+      }
+      .deploy-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+      .deploy-actions .btn { width: 100%; }
+      .log {
+        margin-top: 12px;
+        border-radius: 16px;
+        border: 1px solid rgba(148,163,184,0.12);
+        background: #050915;
+        padding: 12px;
+        min-height: 170px;
+        max-height: 280px;
+        overflow: auto;
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .log-line { margin: 0 0 6px; white-space: pre-wrap; word-break: break-word; }
+      .log-line.info { color: #cdd8f3; }
+      .log-line.good { color: #aef1c0; }
+      .log-line.warn { color: #ffd58a; }
+      .log-line.bad { color: #ff95a8; }
+      .history-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+      .history-item {
+        padding: 12px;
+        border-radius: 16px;
+        border: 1px solid rgba(148,163,184,0.1);
+        background: rgba(255,255,255,0.03);
+      }
+      .history-item .title { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+      .history-item strong { font-size: 13px; }
+      .history-item .meta { margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+      .history-item .actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+      .empty {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+        padding: 14px;
+        border: 1px dashed rgba(148,163,184,0.18);
+        border-radius: 16px;
+        background: rgba(255,255,255,0.02);
+      }
+      .split { display: flex; gap: 10px; flex-wrap: wrap; }
+      .split > * { flex: 1 1 160px; }
+      .footer-note {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: rgba(79,140,255,0.12);
+        color: #dcebff;
+        border: 1px solid rgba(79,140,255,0.25);
+        font-size: 12px;
+      }
+      .skeleton {
+        display: grid;
+        gap: 10px;
+      }
+      .skeleton div {
+        height: 12px; border-radius: 999px;
+        background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      }
+      .skeleton div:nth-child(2) { width: 70%; }
+      .skeleton div:nth-child(3) { width: 45%; }
+      @media (max-width: 1280px) {
+        .grid { grid-template-columns: 320px 1fr; }
+        .panel.console-panel { grid-column: 1 / -1; }
+      }
+      @media (max-width: 900px) {
+        .topbar-inner { flex-direction: column; align-items: stretch; }
+        .top-actions { justify-content: flex-start; }
+        .layout { padding: 12px; }
+        .grid { grid-template-columns: 1fr; }
+        textarea.code { min-height: 420px; }
+        .deploy-actions { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <div class="logo">B</div>
+            <div>
+              <h1>Deploy on Base</h1>
+              <p>Simple form outside, Remix-ish deploy engine inside.</p>
+            </div>
+          </div>
+          <div class="top-actions">
+            <div class="pill"><strong>Network</strong> <span id="network-pill">Base Mainnet</span></div>
+            <div class="pill"><strong>Wallet</strong> <span id="wallet-pill">Not connected</span></div>
+            <button id="connect-btn" class="btn primary">Connect Wallet</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="layout">
+        <div class="grid">
+          <aside class="panel">
+            <div class="panel-header">
+              <h2>Simple deploy form</h2>
+              <p>Isi nama, jumlah, deskripsi, dan image. Sisanya dikerjakan engine deploy di belakang layar.</p>
+            </div>
+            <div class="panel-body stack">
+              <div class="chip">Quest-ready • deploy contract on Base</div>
+              <div class="field">
+                <label for="project-name"><span>Nama project</span><span class="mini">Required</span></label>
+                <input id="project-name" type="text" placeholder="Base Quest Registry" value="Base Quest Registry" />
+              </div>
+              <div class="field">
+                <label for="project-amount"><span>Jumlah</span><span class="mini">uint256</span></label>
+                <input id="project-amount" type="number" min="1" step="1" placeholder="5" value="5" />
+              </div>
+              <div class="field">
+                <label for="project-description"><span>Deskripsi</span><span class="mini">Required</span></label>
+                <textarea id="project-description" placeholder="Short description about the contract or project.">Simple Base deploy template built from a Remix-like interface.</textarea>
+              </div>
+              <div class="field">
+                <label for="image-uri"><span>Image</span><span class="mini">URL / IPFS URI</span></label>
+                <input id="image-uri" type="text" placeholder="https://... or ipfs://..." value="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80" />
+                <div class="hint">Tidak ada backend. Pakai URL publik atau IPFS URI. Data ini disimpan sebagai string di contract.</div>
+              </div>
+              <div class="split">
+                <button id="fill-sample-btn" class="btn ghost small">Fill sample</button>
+                <button id="reset-btn" class="btn ghost small">Reset</button>
+              </div>
+              <div class="field">
+                <label for="chain-select"><span>Target chain</span><span class="mini">Quest recommended</span></label>
+                <select id="chain-select">
+                  <option value="base" selected>Base Mainnet (8453)</option>
+                  <option value="base-sepolia">Base Sepolia (84532)</option>
+                </select>
+              </div>
+              <div class="footer-note">
+                UI ini sengaja simpel buat user. Tapi mesin deploy di kanan dibuat terasa seperti Remix: compile, wallet connect, deploy, log, dan history.
+              </div>
+            </div>
+          </aside>
+
+          <section class="panel editor-panel">
+            <div class="panel-header">
+              <div class="editor-toolbar">
+                <div>
+                  <h2>Remix-style contract engine</h2>
+                  <p>Source contract, compile status, dan deployment flow ditampilkan di sini.</p>
+                </div>
+                <div class="status-row">
+                  <span id="compile-status" class="status warn">Waiting for contract template</span>
+                  <span id="artifact-status" class="status">Artifact loading...</span>
+                </div>
+              </div>
+            </div>
+            <div class="panel-body editor-wrap">
+              <div class="code-shell">
+                <div class="code-head">
+                  <div>
+                    <strong>contracts/DeployOnBase.sol</strong>
+                    <span id="source-meta">generated preview</span>
+                  </div>
+                  <div class="split" style="flex:0 0 auto;">
+                    <button id="compile-btn" class="btn small">Compile</button>
+                    <button id="deploy-btn" class="btn primary small">Deploy Contract</button>
+                  </div>
+                </div>
+                <textarea id="source-preview" class="code" readonly spellcheck="false">Loading source...</textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel console-panel">
+            <div class="panel-header">
+              <h2>Deploy console</h2>
+              <p>Wallet status, tx hash, contract address, dan deployment history.</p>
+            </div>
+            <div class="panel-body console">
+              <div class="wallet-card">
+                <div class="wallet-top">
+                  <h3>Wallet</h3>
+                  <span id="connection-state" class="status">Disconnected</span>
+                </div>
+                <div class="kv">
+                  <div class="kv-row">
+                    <span>Address</span>
+                    <code id="wallet-address">—</code>
+                  </div>
+                  <div class="kv-row">
+                    <span>Chain</span>
+                    <code id="wallet-chain">Base Mainnet</code>
+                  </div>
+                  <div class="kv-row">
+                    <span>Tx hash</span>
+                    <code id="tx-hash">—</code>
+                  </div>
+                  <div class="kv-row">
+                    <span>Contract</span>
+                    <code id="contract-address">—</code>
+                  </div>
+                </div>
+                <div class="deploy-actions">
+                  <button id="deploy-5-btn" class="btn ghost">Deploy x5</button>
+                  <button id="copy-address-btn" class="btn ghost">Copy address</button>
+                </div>
+              </div>
+
+              <div class="deploy-card">
+                <div class="deploy-top">
+                  <h3>Status log</h3>
+                  <span class="mini">Live</span>
+                </div>
+                <div id="log" class="log" aria-live="polite">
+                  <div class="log-line info">[info] Ready. Connect wallet to start.</div>
+                </div>
+              </div>
+
+              <div class="history-card">
+                <div class="deploy-top">
+                  <h3>Deployment history</h3>
+                  <button id="clear-history-btn" class="btn small ghost">Clear</button>
+                </div>
+                <div id="history-list" class="history-list">
+                  <div class="empty">Belum ada deployment. Setelah deploy sukses, hasilnya akan muncul di sini.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

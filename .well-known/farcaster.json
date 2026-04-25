@@ -1,0 +1,15 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Deploy on Base",
+    "iconUrl": "https://gyoomei.github.io/deploy-on-base/assets/icon.svg",
+    "homeUrl": "https://gyoomei.github.io/deploy-on-base/",
+    "splashImageUrl": "https://gyoomei.github.io/deploy-on-base/assets/icon.svg",
+    "splashBackgroundColor": "#0b1020"
+  }
+}
