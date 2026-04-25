@@ -34,7 +34,7 @@ const DEFAULTS = {
   projectName: 'Base Quest Token',
   amount: '1000000',
   description: 'Simple token-style deploy on Base with clean metadata and a lightweight form.',
-  imageUri: 'https://gyoomei.github.io/deploy-on-base/assets/og.svg',
+  imageUri: 'https://deploy-on-base.vercel.app/assets/og.png',
 };
 
 const CHAINS = {
