@@ -7,9 +7,9 @@
   "miniapp": {
     "version": "1",
     "name": "Deploy on Base",
-    "iconUrl": "https://deploy-on-base.vercel.app/assets/icon.svg",
+    "iconUrl": "https://deploy-on-base.vercel.app/assets/logo.jpg",
     "homeUrl": "https://deploy-on-base.vercel.app/",
-    "splashImageUrl": "https://deploy-on-base.vercel.app/assets/icon.svg",
+    "splashImageUrl": "https://deploy-on-base.vercel.app/assets/logo.jpg",
     "splashBackgroundColor": "#0b1020",
     "subtitle": "Deploy token metadata on Base",
     "description": "Simple Farcaster mini app to deploy token-style contract metadata on Base with a lightweight form.",
