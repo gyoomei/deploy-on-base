@@ -9,6 +9,27 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 const STORAGE_KEY = 'deploy-on-base.history.v1';
+const TEMPLATES = {
+  storage: {
+    name: 'Simple Storage',
+    file: 'SimpleStorage.sol',
+    description: 'Basic data storage contract',
+    params: ['projectName', 'amount', 'description', 'imageUri'],
+  },
+  nft: {
+    name: 'Simple NFT',
+    file: 'SimpleNFT.sol',
+    description: 'Minimal NFT contract',
+    params: ['name', 'symbol'],
+  },
+  erc20: {
+    name: 'ERC20 Token',
+    file: 'ERC20Token.sol',
+    description: 'Standard token contract',
+    params: ['name', 'symbol', 'initialSupply'],
+  },
+};
+
 const DEFAULTS = {
   projectName: 'Base Quest Registry',
   amount: '5',
@@ -48,6 +69,7 @@ const state = {
   latestTxHash: '',
   isCompiling: false,
   isDeploying: false,
+  currentTemplate: 'storage',
 };
 
 const els = {
@@ -67,6 +89,7 @@ const els = {
   fillSampleBtn: document.getElementById('fill-sample-btn'),
   resetBtn: document.getElementById('reset-btn'),
   chainSelect: document.getElementById('chain-select'),
+  templateSelect: document.getElementById('template-select'),
   projectName: document.getElementById('project-name'),
   projectAmount: document.getElementById('project-amount'),
   projectDescription: document.getElementById('project-description'),
@@ -155,6 +178,29 @@ function log(level, message) {
   els.log.scrollTop = els.log.scrollHeight;
 }
 
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icons = {
+    success: '✓',
+    error: '✗',
+    info: 'ℹ',
+  };
+  
+  toast.innerHTML = `
+    <div class="toast-icon">${icons[type] || icons.info}</div>
+    <div class="toast-content">${escapeHtml(message)}</div>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.classList.add('hiding');
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
 function toastLog(message) {
   log('info', message);
 }
@@ -228,6 +274,15 @@ function setDeployButtons(disabled) {
   els.deploy5Btn.disabled = disabled;
   els.compileBtn.disabled = disabled;
   els.connectBtn.disabled = disabled && !state.address;
+  
+  // Toggle loading class
+  if (disabled) {
+    els.deployBtn.classList.add('loading');
+    els.deploy5Btn.classList.add('loading');
+  } else {
+    els.deployBtn.classList.remove('loading');
+    els.deploy5Btn.classList.remove('loading');
+  }
 }
 
 async function loadArtifacts() {
@@ -285,17 +340,26 @@ async function connectWallet() {
   const provider = await getProvider();
   const chain = activeChain();
   setStatus(els.connectionState, 'warn', 'Connecting...');
-  await switchNetwork(provider, chain);
-  const ethers = window.ethers;
-  const browserProvider = new ethers.BrowserProvider(provider);
-  const signer = await browserProvider.getSigner();
-  const address = await signer.getAddress();
-  state.provider = provider;
-  state.signer = signer;
-  state.address = address;
-  renderWallet();
-  log('good', `Wallet connected: ${address}`);
-  log('info', `Network ready: ${chain.label}`);
+  els.connectBtn.classList.add('loading');
+  els.connectBtn.disabled = true;
+  
+  try {
+    await switchNetwork(provider, chain);
+    const ethers = window.ethers;
+    const browserProvider = new ethers.BrowserProvider(provider);
+    const signer = await browserProvider.getSigner();
+    const address = await signer.getAddress();
+    state.provider = provider;
+    state.signer = signer;
+    state.address = address;
+    renderWallet();
+    log('good', `Wallet connected: ${address}`);
+    log('info', `Network ready: ${chain.label}`);
+    showToast('Wallet connected successfully', 'success');
+  } finally {
+    els.connectBtn.classList.remove('loading');
+    els.connectBtn.disabled = false;
+  }
 }
 
 function currentExplorerBase() {
@@ -354,6 +418,7 @@ async function deployOnce() {
     renderTransactionState(tx.hash, contractAddress);
     log('good', `Contract deployed: ${contractAddress}`);
     log('good', `Open on explorer: ${currentExplorerBase()}/address/${contractAddress}`);
+    showToast(`Contract deployed: ${shortAddress(contractAddress)}`, 'success');
 
     registerHistory({
       projectName: draft.projectName,
@@ -367,12 +432,17 @@ async function deployOnce() {
     });
 
     setStatus(els.compileStatus, 'good', 'Deployment success ✓');
+    
+    // Farcaster share prompt
+    await promptShare(draft.projectName, contractAddress, tx.hash);
+    
     return true;
   } catch (error) {
     console.error(error);
     const msg = error?.shortMessage || error?.message || String(error);
     log('bad', msg);
     setStatus(els.compileStatus, 'warn', 'Deployment failed');
+    showToast('Deployment failed', 'error');
     return false;
   } finally {
     state.isDeploying = false;
@@ -388,20 +458,34 @@ async function deployMany(times) {
   if (errors.length) {
     setStatus(els.compileStatus, 'warn', 'Fix form errors first');
     errors.forEach((error) => log('bad', error));
+    showToast('Fix form errors first', 'error');
     return;
   }
   log('warn', `Quest mode: deploying ${times} contracts sequentially.`);
+  showToast(`Starting batch deploy: ${times} contracts`, 'info');
+  
+  let successCount = 0;
   for (let i = 0; i < times; i += 1) {
     log('info', `Batch deploy ${i + 1}/${times}`);
     // eslint-disable-next-line no-await-in-loop
     const ok = await deployOnce();
-    if (!ok) break;
+    if (ok) {
+      successCount += 1;
+    } else {
+      showToast(`Batch stopped at ${i + 1}/${times}. ${successCount} succeeded.`, 'error');
+      break;
+    }
+  }
+  
+  if (successCount === times) {
+    showToast(`Batch complete! ${successCount}/${times} contracts deployed.`, 'success');
   }
 }
 
 async function compileTemplate() {
   if (!state.baseSource) {
     log('warn', 'Source not loaded yet.');
+    showToast('Source not loaded yet', 'error');
     return;
   }
   const draft = draftValues();
@@ -409,15 +493,21 @@ async function compileTemplate() {
   if (errors.length) {
     setStatus(els.compileStatus, 'warn', 'Fix form errors first');
     errors.forEach((error) => log('bad', error));
+    showToast('Fix form errors first', 'error');
     return;
   }
   state.isCompiling = true;
+  els.compileBtn.classList.add('loading');
+  els.compileBtn.disabled = true;
   setStatus(els.compileStatus, 'warn', 'Compiling template...');
   renderSource();
   log('good', `Template compiled locally: ${shortHash(state.compiledHash)}`);
+  showToast('Template compiled successfully', 'success');
   setTimeout(() => {
     if (!state.isDeploying) setStatus(els.compileStatus, 'good', 'Compile ready ✓');
     state.isCompiling = false;
+    els.compileBtn.classList.remove('loading');
+    els.compileBtn.disabled = false;
   }, 250);
 }
 
@@ -437,13 +527,34 @@ function resetForm() {
   renderSource();
 }
 
+async function promptShare(projectName, contractAddress, txHash) {
+  try {
+    const appUrl = window.location.origin + window.location.pathname;
+    const explorerUrl = `${currentExplorerBase()}/address/${contractAddress}`;
+    const chain = activeChain();
+    
+    const text = `Just deployed ${projectName} on ${chain.label} 🚀⚡\n\nContract: ${shortAddress(contractAddress)}\n\nDeploy your own smart contract with a simple form.`;
+    
+    await sdk.actions.composeCast({
+      text,
+      embeds: [appUrl, explorerUrl],
+    });
+    
+    showToast('Cast composer opened', 'success');
+  } catch (error) {
+    console.warn('Farcaster share unavailable:', error);
+  }
+}
+
 async function copyLatestAddress() {
   if (!state.latestAddress) {
     log('warn', 'No contract address yet.');
+    showToast('No contract address yet', 'error');
     return;
   }
   await navigator.clipboard.writeText(state.latestAddress);
   log('good', `Copied: ${state.latestAddress}`);
+  showToast('Address copied', 'success');
 }
 
 function wireHistoryActions() {
@@ -457,6 +568,7 @@ function wireHistoryActions() {
     if (copyAddress) {
       await navigator.clipboard.writeText(copyAddress);
       log('good', `Copied historical address: ${copyAddress}`);
+      showToast('Address copied to clipboard', 'success');
     }
     if (openTx) openExplorer(`/tx/${openTx}`);
     if (openAddress) openExplorer(`/address/${openAddress}`);
@@ -546,6 +658,11 @@ async function init() {
 
   renderSource();
   if (!state.history.length) renderHistory();
+  
+  // Show welcome toast
+  setTimeout(() => {
+    showToast('Deploy on Base ready. Connect wallet to start.', 'info');
+  }, 800);
 }
 
 void init();
