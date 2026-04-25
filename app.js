@@ -415,6 +415,10 @@ async function deployOnce() {
       await switchNetwork(state.provider, activeChain());
     }
 
+    if (!state.address || !state.signer) {
+      throw new Error('Wallet not connected. Connect your wallet before deploying.');
+    }
+
     const ethers = window.ethers;
     const factory = new ethers.ContractFactory(state.artifact.abi, state.artifact.bytecode, state.signer);
     const amount = ethers.toBigInt(draft.amount);
@@ -456,8 +460,18 @@ async function deployOnce() {
     console.error(error);
     const msg = error?.shortMessage || error?.message || String(error);
     log('bad', msg);
-    setStatus(els.compileStatus, 'warn', 'Deployment failed');
-    showToast('Deployment failed', 'error');
+
+    const lowerMsg = msg.toLowerCase();
+    if (lowerMsg.includes('wallet not connected') || lowerMsg.includes('wallet provider not found')) {
+      setStatus(els.connectionState, 'warn', 'Connection required');
+      setStatus(els.compileStatus, 'warn', 'Connect wallet first');
+    } else if (lowerMsg.includes('user rejected')) {
+      setStatus(els.compileStatus, 'warn', 'Transaction rejected');
+    } else {
+      setStatus(els.compileStatus, 'warn', 'Deployment failed');
+    }
+
+    showToast(msg, 'error');
     return false;
   } finally {
     state.isDeploying = false;
@@ -661,7 +675,7 @@ async function init() {
       await connectWallet();
     } catch (error) {
       log('bad', error?.message || String(error));
-      setStatus(els.connectionState, 'warn', 'Disconnected');
+      setStatus(els.connectionState, 'warn', 'Connection failed');
     }
   });
 
