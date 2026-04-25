@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+contract SimpleStorage {
+    address public immutable owner;
+    string public projectName;
+    uint256 public amount;
+    string public description;
+    string public imageUri;
+    uint256 public createdAt;
+    
+    event ProjectUpdated(string projectName, uint256 amount, string description, string imageUri);
+    
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+    
+    constructor(
+        string memory _projectName,
+        uint256 _amount,
+        string memory _description,
+        string memory _imageUri
+    ) {
+        owner = msg.sender;
+        projectName = _projectName;
+        amount = _amount;
+        description = _description;
+        imageUri = _imageUri;
+        createdAt = block.timestamp;
+        emit ProjectUpdated(_projectName, _amount, _description, _imageUri);
+    }
+    
+    function updateProject(
+        string calldata _projectName,
+        uint256 _amount,
+        string calldata _description,
+        string calldata _imageUri
+    ) external onlyOwner {
+        projectName = _projectName;
+        amount = _amount;
+        description = _description;
+        imageUri = _imageUri;
+        emit ProjectUpdated(_projectName, _amount, _description, _imageUri);
+    }
+    
+    function summary()
+        external
+        view
+        returns (
+            address contractOwner,
+            string memory name,
+            uint256 supply,
+            string memory projectDescription,
+            string memory image
+        )
+    {
+        return (owner, projectName, amount, description, imageUri);
+    }
+}
