@@ -220,13 +220,13 @@ function renderWallet() {
   if (state.address) {
     els.walletPill.textContent = shortAddress(state.address);
     els.walletAddress.textContent = state.address;
-    els.connectionState.textContent = 'Connected';
-    els.connectionState.classList.add('good');
+    setStatus(els.connectionState, 'good', 'Connected');
+    els.connectBtn.textContent = 'Connected';
   } else {
     els.walletPill.textContent = 'Not connected';
     els.walletAddress.textContent = '—';
-    els.connectionState.textContent = 'Disconnected';
-    els.connectionState.classList.remove('good');
+    setStatus(els.connectionState, '', 'Disconnected');
+    els.connectBtn.textContent = 'Connect Wallet';
   }
   const chain = activeChain();
   els.networkPill.textContent = chain.label;
@@ -365,6 +365,12 @@ async function connectWallet() {
     log('good', `Wallet connected: ${address}`);
     log('info', `Network ready: ${chain.label}`);
     showToast('Wallet connected successfully', 'success');
+  } catch (error) {
+    const msg = error?.shortMessage || error?.message || String(error);
+    log('bad', msg);
+    setStatus(els.connectionState, 'warn', 'Connection failed');
+    showToast(msg, 'error');
+    throw error;
   } finally {
     els.connectBtn.classList.remove('loading');
     els.connectBtn.disabled = false;
