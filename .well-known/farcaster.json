@@ -1,15 +1,15 @@
 {
   "accountAssociation": {
-    "header": "",
-    "payload": "",
-    "signature": ""
+    "header": "eyJmaWQiOjI0MTQ3MCwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDkyQzgyNTIwOTA3YjZDZmU2MUUzNjNmZTBFOWY2QjdjODJmQzdENTkifQ",
+    "payload": "eyJkb21haW4iOiJkZXBsb3ktb24tYmFzZS52ZXJjZWwuYXBwIn0",
+    "signature": "VtUf6LiJMxdr77Pgm9YnhsuuzB9MsT8JsM9qsuADV5h9FjCXPCA9rjmt6he90vkhDZtDgNag//9DnKrkQ4n0VRs="
   },
   "miniapp": {
     "version": "1",
     "name": "Deploy on Base",
-    "iconUrl": "https://gyoomei.github.io/deploy-on-base/assets/icon.svg",
-    "homeUrl": "https://gyoomei.github.io/deploy-on-base/",
-    "splashImageUrl": "https://gyoomei.github.io/deploy-on-base/assets/icon.svg",
+    "iconUrl": "https://deploy-on-base.vercel.app/assets/icon.svg",
+    "homeUrl": "https://deploy-on-base.vercel.app/",
+    "splashImageUrl": "https://deploy-on-base.vercel.app/assets/icon.svg",
     "splashBackgroundColor": "#0b1020",
     "subtitle": "Deploy token metadata on Base",
     "description": "Simple Farcaster mini app to deploy token-style contract metadata on Base with a lightweight form.",
