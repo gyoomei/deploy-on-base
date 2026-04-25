@@ -233,6 +233,28 @@ function renderWallet() {
   els.walletChain.textContent = `${chain.label} (${chain.chainId})`;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForTransactionReceipt(txHash, maxAttempts = 120, delayMs = 2000) {
+  if (!state.provider?.request) {
+    throw new Error('Provider unavailable while waiting for receipt.');
+  }
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const receipt = await state.provider.request({
+      method: 'eth_getTransactionReceipt',
+      params: [txHash],
+    });
+
+    if (receipt) return receipt;
+    await sleep(delayMs);
+  }
+
+  throw new Error('Timed out while waiting for transaction confirmation.');
+}
+
 function renderTransactionState(txHash = '—', contractAddress = '—') {
   els.txHash.textContent = txHash;
   els.contractAddress.textContent = contractAddress;
@@ -435,8 +457,12 @@ async function deployOnce() {
     log('info', `Expected contract address: ${expectedAddress}`);
     log('info', 'Waiting for confirmation...');
 
-    await tx.wait();
-    const contractAddress = expectedAddress;
+    const receipt = await waitForTransactionReceipt(tx.hash);
+    if (receipt?.status === '0x0') {
+      throw new Error('Transaction reverted on-chain.');
+    }
+
+    const contractAddress = receipt?.contractAddress || expectedAddress;
     renderTransactionState(tx.hash, contractAddress);
     log('good', `Contract deployed: ${contractAddress}`);
     log('good', `Open on explorer: ${currentExplorerBase()}/address/${contractAddress}`);
@@ -472,6 +498,8 @@ async function deployOnce() {
       setStatus(els.compileStatus, 'warn', 'Transaction rejected');
     } else if (lowerMsg.includes('missing revert data') || lowerMsg.includes('estimategas')) {
       setStatus(els.compileStatus, 'warn', 'Gas estimation failed');
+    } else if (lowerMsg.includes('coalesce')) {
+      setStatus(els.compileStatus, 'warn', 'Provider response error');
     } else {
       setStatus(els.compileStatus, 'warn', 'Deployment failed');
     }
