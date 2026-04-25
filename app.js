@@ -422,18 +422,21 @@ async function deployOnce() {
     const ethers = window.ethers;
     const factory = new ethers.ContractFactory(state.artifact.abi, state.artifact.bytecode, state.signer);
     const amount = ethers.toBigInt(draft.amount);
+    const deployTxRequest = await factory.getDeployTransaction(draft.projectName, amount, draft.description, draft.imageUri);
+    deployTxRequest.gasLimit = activeChain().chainId === 8453 ? 3500000n : 4000000n;
 
     log('info', `Preparing deploy for token ${draft.projectName}`);
     setStatus(els.compileStatus, 'good', 'Compiled template ready ✓');
 
-    const contract = await factory.deploy(draft.projectName, amount, draft.description, draft.imageUri);
-    const tx = contract.deploymentTransaction();
+    const tx = await state.signer.sendTransaction(deployTxRequest);
+    const expectedAddress = ethers.getCreateAddress({ from: state.address, nonce: tx.nonce });
     renderTransactionState(tx.hash, 'pending...');
     log('info', `Transaction sent: ${tx.hash}`);
+    log('info', `Expected contract address: ${expectedAddress}`);
     log('info', 'Waiting for confirmation...');
 
     await tx.wait();
-    const contractAddress = await contract.getAddress();
+    const contractAddress = expectedAddress;
     renderTransactionState(tx.hash, contractAddress);
     log('good', `Contract deployed: ${contractAddress}`);
     log('good', `Open on explorer: ${currentExplorerBase()}/address/${contractAddress}`);
@@ -467,6 +470,8 @@ async function deployOnce() {
       setStatus(els.compileStatus, 'warn', 'Connect wallet first');
     } else if (lowerMsg.includes('user rejected')) {
       setStatus(els.compileStatus, 'warn', 'Transaction rejected');
+    } else if (lowerMsg.includes('missing revert data') || lowerMsg.includes('estimategas')) {
+      setStatus(els.compileStatus, 'warn', 'Gas estimation failed');
     } else {
       setStatus(els.compileStatus, 'warn', 'Deployment failed');
     }
