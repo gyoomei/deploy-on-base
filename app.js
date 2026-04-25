@@ -31,11 +31,10 @@ const TEMPLATES = {
 };
 
 const DEFAULTS = {
-  projectName: 'Base Quest Registry',
-  amount: '5',
-  description: 'Simple Base deploy template built from a Remix-like interface.',
-  imageUri:
-    'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80',
+  projectName: 'Base Quest Token',
+  amount: '1000000',
+  description: 'Simple token-style deploy on Base with clean metadata and a lightweight form.',
+  imageUri: 'https://gyoomei.github.io/deploy-on-base/assets/og.svg',
 };
 
 const CHAINS = {
@@ -146,24 +145,23 @@ function draftValues() {
     projectName: els.projectName.value.trim(),
     amount: els.projectAmount.value.trim(),
     description: els.projectDescription.value.trim(),
-    imageUri: els.imageUri.value.trim(),
+    imageUri: els.imageUri.value.trim() || DEFAULTS.imageUri,
   };
 }
 
 function validateDraft(draft) {
   const errors = [];
-  if (!draft.projectName) errors.push('Nama project wajib diisi.');
-  if (!draft.amount) errors.push('Jumlah wajib diisi.');
+  if (!draft.projectName) errors.push('Token name wajib diisi.');
+  if (!draft.amount) errors.push('Initial supply wajib diisi.');
   if (!Number.isInteger(Number(draft.amount)) || Number(draft.amount) <= 0) {
-    errors.push('Jumlah harus angka bulat lebih dari 0.');
+    errors.push('Initial supply harus angka bulat lebih dari 0.');
   }
-  if (!draft.description) errors.push('Deskripsi wajib diisi.');
-  if (!draft.imageUri) errors.push('Image URI wajib diisi.');
+  if (!draft.description) errors.push('Token description wajib diisi.');
   return errors;
 }
 
 function generatePreviewSource(draft) {
-  const summary = `/*\n  Draft values used for this deploy:\n  - projectName: ${draft.projectName}\n  - amount: ${draft.amount}\n  - description: ${draft.description}\n  - imageUri: ${draft.imageUri}\n*/`;
+  const summary = `/*\n  Draft values used for this deploy:\n  - tokenName: ${draft.projectName}\n  - initialSupply: ${draft.amount}\n  - tokenDescription: ${draft.description}\n  - imageUri: ${draft.imageUri}\n*/`;
   return `${summary}\n\n${state.baseSource}`;
 }
 
@@ -415,7 +413,7 @@ async function deployOnce() {
     const factory = new ethers.ContractFactory(state.artifact.abi, state.artifact.bytecode, state.signer);
     const amount = ethers.toBigInt(draft.amount);
 
-    log('info', `Preparing deploy for ${draft.projectName}`);
+    log('info', `Preparing deploy for token ${draft.projectName}`);
     setStatus(els.compileStatus, 'good', 'Compiled template ready ✓');
 
     const contract = await factory.deploy(draft.projectName, amount, draft.description, draft.imageUri);
@@ -429,7 +427,7 @@ async function deployOnce() {
     renderTransactionState(tx.hash, contractAddress);
     log('good', `Contract deployed: ${contractAddress}`);
     log('good', `Open on explorer: ${currentExplorerBase()}/address/${contractAddress}`);
-    showToast(`Contract deployed: ${shortAddress(contractAddress)}`, 'success');
+    showToast(`Token deployed: ${shortAddress(contractAddress)}`, 'success');
 
     registerHistory({
       projectName: draft.projectName,
@@ -523,10 +521,10 @@ async function compileTemplate() {
 }
 
 function fillSample() {
-  els.projectName.value = 'Base Quest Vault';
-  els.projectAmount.value = '5';
-  els.projectDescription.value = 'A cleaner deploy-ready template for Base quests, stored with Remix-like deployment flow.';
-  els.imageUri.value = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80';
+  els.projectName.value = 'Gyoo Token';
+  els.projectAmount.value = '1000000';
+  els.projectDescription.value = 'Community token deployed on Base with a clean, minimal form.';
+  els.imageUri.value = DEFAULTS.imageUri;
   renderSource();
 }
 
@@ -534,7 +532,7 @@ function resetForm() {
   els.projectName.value = DEFAULTS.projectName;
   els.projectAmount.value = DEFAULTS.amount;
   els.projectDescription.value = DEFAULTS.description;
-  els.imageUri.value = DEFAULTS.imageUri;
+  els.imageUri.value = '';
   renderSource();
 }
 
@@ -552,7 +550,7 @@ async function promptShare(projectName, contractAddress, txHash) {
     }
     
     text += `Contract: ${shortAddress(contractAddress)}\n`;
-    text += `\nDeploy your own smart contract with a simple form — no Remix, no CLI, just fill and deploy.`;
+    text += `\nDeploy your token on Base with a simple form — fill the important fields and go.`;
     
     await sdk.actions.composeCast({
       text,
@@ -574,7 +572,7 @@ async function copyLatestAddress() {
   }
   await navigator.clipboard.writeText(state.latestAddress);
   log('good', `Copied: ${state.latestAddress}`);
-  showToast('Address copied', 'success');
+  showToast('Contract address copied', 'success');
 }
 
 function wireHistoryActions() {
@@ -712,7 +710,7 @@ async function init() {
   
   // Show welcome toast
   setTimeout(() => {
-    showToast('Deploy on Base ready. Connect wallet to start.', 'info');
+    showToast('Deploy on Base ready. Fill token details and connect wallet.', 'info');
   }, 800);
 }
 
