@@ -10,6 +10,10 @@
     "iconUrl": "https://gyoomei.github.io/deploy-on-base/assets/icon.svg",
     "homeUrl": "https://gyoomei.github.io/deploy-on-base/",
     "splashImageUrl": "https://gyoomei.github.io/deploy-on-base/assets/icon.svg",
-    "splashBackgroundColor": "#0b1020"
+    "splashBackgroundColor": "#0b1020",
+    "subtitle": "Deploy token metadata on Base",
+    "description": "Simple Farcaster mini app to deploy token-style contract metadata on Base with a lightweight form.",
+    "primaryCategory": "developer-tools",
+    "tags": ["base", "deploy", "token", "developer-tools"]
   }
 }
