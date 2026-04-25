@@ -6,7 +6,7 @@
     <title>Deploy on Base</title>
     <meta
       name="description"
-      content="Mini Farcaster app to deploy smart contracts on Base with a Remix-like workflow, but a much simpler form-first UI."
+      content="Simple Farcaster mini app to deploy a token-like contract on Base with only the most important fields."
     />
     <meta name="theme-color" content="#0b1020" />
     <meta
@@ -29,72 +29,30 @@
         --text: #e8eefc;
         --muted: #93a4c7;
         --accent: #4f8cff;
-        --accent-2: #79c0ff;
         --success: #22c55e;
         --warning: #f59e0b;
         --danger: #fb7185;
         --shadow: 0 20px 80px rgba(0, 0, 0, 0.35);
-        --radius: 20px;
+        --radius: 22px;
         --radius-sm: 14px;
         --code: #d7e4ff;
         --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
+
       * { box-sizing: border-box; }
       html, body { height: 100%; }
-      
-      /* Smooth scrolling */
-      html { scroll-behavior: smooth; }
-      
       body {
         margin: 0;
         font-family: var(--sans);
+        color: var(--text);
         background:
           radial-gradient(circle at top left, rgba(79, 140, 255, 0.18), transparent 28%),
-          radial-gradient(circle at top right, rgba(121, 192, 255, 0.12), transparent 22%),
           linear-gradient(180deg, #09101d 0%, #07101b 100%);
-        color: var(--text);
-        animation: fadeIn 0.6s ease-out;
-      }
-      
-      @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-      
-      @keyframes slideUp {
-        from { 
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to { 
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      
-      @keyframes scaleIn {
-        from { 
-          opacity: 0;
-          transform: scale(0.95);
-        }
-        to { 
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-      
-      @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-      }
-      
-      @keyframes shimmer {
-        0% { background-position: -1000px 0; }
-        100% { background-position: 1000px 0; }
       }
       button, input, textarea, select { font: inherit; }
       button { cursor: pointer; }
+
       .app {
         min-height: 100vh;
         display: flex;
@@ -105,56 +63,43 @@
         top: 0;
         z-index: 20;
         backdrop-filter: blur(16px);
-        background: rgba(7, 14, 26, 0.72);
-        border-bottom: 1px solid rgba(148, 163, 184, 0.09);
-        animation: slideDown 0.5s ease-out;
+        background: rgba(7, 14, 26, 0.78);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
       }
-      
-      @keyframes slideDown {
-        from {
-          opacity: 0;
-          transform: translateY(-20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      .topbar-inner,
+      .main,
+      .footer {
+        width: min(1120px, calc(100% - 24px));
+        margin: 0 auto;
       }
       .topbar-inner {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        padding: 16px 18px;
-        max-width: 1600px;
-        margin: 0 auto;
+        padding: 16px 0;
       }
-      .brand { display: flex; align-items: center; gap: 14px; }
+      .brand { display: flex; align-items: center; gap: 12px; }
       .logo {
-        width: 44px; height: 44px; border-radius: 14px;
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
         background: linear-gradient(145deg, rgba(79, 140, 255, 0.95), rgba(121, 192, 255, 0.8));
-        box-shadow: 0 16px 32px rgba(79, 140, 255, 0.28);
-        display: grid; place-items: center;
-        font-weight: 900; color: white;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        animation: logoPulse 3s ease-in-out infinite;
+        color: white;
+        font-weight: 900;
+        box-shadow: 0 14px 32px rgba(79, 140, 255, 0.28);
       }
-      .logo:hover {
-        transform: scale(1.05);
-        box-shadow: 0 20px 40px rgba(79, 140, 255, 0.4);
+      .brand h1 { margin: 0; font-size: 16px; }
+      .brand p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+      .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
       }
-      
-      @keyframes logoPulse {
-        0%, 100% { 
-          box-shadow: 0 16px 32px rgba(79, 140, 255, 0.28);
-        }
-        50% { 
-          box-shadow: 0 16px 32px rgba(79, 140, 255, 0.45), 0 0 30px rgba(79, 140, 255, 0.3);
-        }
-      }
-      .brand h1 { margin: 0; font-size: 16px; line-height: 1.1; }
-      .brand p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
-      .top-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
       .pill {
         display: inline-flex;
         align-items: center;
@@ -163,55 +108,11 @@
         border-radius: 999px;
         border: 1px solid var(--line);
         background: rgba(255,255,255,0.03);
-        color: var(--text);
         font-size: 13px;
-        white-space: nowrap;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--text);
       }
-      .pill:hover { 
-        background: rgba(255,255,255,0.08); 
-        border-color: var(--line-strong);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      }
-      
-      /* Toast notifications */
-      .toast {
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        z-index: 999;
-        background: var(--panel-2);
-        border: 1px solid var(--line-strong);
-        border-radius: var(--radius-sm);
-        padding: 14px 18px;
-        box-shadow: var(--shadow);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 280px;
-        max-width: 420px;
-        animation: slideIn 0.3s ease;
-        backdrop-filter: blur(12px);
-      }
-      @keyframes slideIn {
-        from { transform: translateX(120%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-      @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(120%); opacity: 0; }
-      }
-      .toast.hiding { animation: slideOut 0.3s ease forwards; }
-      .toast-icon { font-size: 20px; flex-shrink: 0; }
-      .toast-content { flex: 1; font-size: 14px; line-height: 1.4; }
-      .toast.success { border-color: var(--success); }
-      .toast.success .toast-icon { color: var(--success); }
-      .toast.error { border-color: var(--danger); }
-      .toast.error .toast-icon { color: var(--danger); }
-      .toast.info { border-color: var(--accent); }
-      .toast.info .toast-icon { color: var(--accent); }
       .pill strong { font-weight: 700; }
+
       .btn {
         border: 1px solid var(--line);
         background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
@@ -222,106 +123,99 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
-                    border-color 0.2s ease, 
-                    background 0.2s ease, 
-                    opacity 0.2s ease,
-                    box-shadow 0.2s ease;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        position: relative;
+        transition: transform 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
       }
-      .btn:hover:not(:disabled) { 
-        transform: translateY(-2px); 
-        border-color: rgba(79,140,255,0.6);
-        box-shadow: 0 12px 28px rgba(0,0,0,0.18), 0 0 20px rgba(79,140,255,0.15);
-      }
-      .btn:active:not(:disabled) {
-        transform: translateY(0);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      }
-      .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
-      .btn.loading { pointer-events: none; opacity: 0.7; }
-      .btn.loading::after {
-        content: '';
-        position: absolute;
-        width: 14px;
-        height: 14px;
-        border: 2px solid transparent;
-        border-top-color: currentColor;
-        border-radius: 50%;
-        animation: spin 0.6s linear infinite;
-      }
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-      
-      /* Shimmer effect for loading states */
-      .shimmer {
-        background: linear-gradient(
-          90deg,
-          rgba(255,255,255,0.03) 0%,
-          rgba(255,255,255,0.08) 50%,
-          rgba(255,255,255,0.03) 100%
-        );
-        background-size: 200% 100%;
-        animation: shimmer 2s ease-in-out infinite;
-      }
+      .btn:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(79,140,255,0.6); }
+      .btn:disabled { opacity: 0.6; cursor: not-allowed; }
       .btn.primary {
         background: linear-gradient(180deg, rgba(79,140,255,1), rgba(54,118,255,0.9));
-        border-color: rgba(79,140,255,0.8);
+        border-color: rgba(79,140,255,0.9);
         color: white;
-        box-shadow: 0 8px 24px rgba(79,140,255,0.35), 0 0 20px rgba(79,140,255,0.2);
-      }
-      .btn.primary:hover:not(:disabled) {
-        box-shadow: 0 12px 32px rgba(79,140,255,0.45), 0 0 40px rgba(79,140,255,0.3);
-        border-color: rgba(79,140,255,1);
-      }
-      .btn.primary:active:not(:disabled) {
-        box-shadow: 0 6px 20px rgba(79,140,255,0.4), 0 0 24px rgba(79,140,255,0.25);
+        box-shadow: 0 10px 24px rgba(79,140,255,0.32);
       }
       .btn.ghost { background: rgba(255,255,255,0.03); }
-      .btn.small { padding: 9px 12px; border-radius: 12px; font-size: 13px; }
-      .layout {
-        max-width: 1600px;
-        width: 100%;
-        margin: 0 auto;
-        padding: 18px;
+      .btn.small { padding: 9px 12px; font-size: 13px; }
+      .btn.loading { pointer-events: none; opacity: 0.7; }
+
+      .main {
         flex: 1;
+        padding: 28px 0 36px;
       }
-      .grid {
+      .hero {
         display: grid;
-        grid-template-columns: 340px minmax(0, 1fr) 360px;
+        grid-template-columns: 1.2fr .8fr;
         gap: 16px;
-        min-height: calc(100vh - 106px);
+        margin-bottom: 16px;
       }
-      .panel {
+      .hero-card,
+      .panel,
+      .mini-panel {
         background: var(--panel);
         border: 1px solid var(--line);
         border-radius: var(--radius);
         box-shadow: var(--shadow);
-        overflow: hidden;
-        min-width: 0;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                    box-shadow 0.3s ease,
-                    border-color 0.3s ease;
-        animation: slideUp 0.5s ease-out;
       }
-      .panel:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 24px 96px rgba(0, 0, 0, 0.45), 0 0 40px rgba(79, 140, 255, 0.08);
-        border-color: rgba(79, 140, 255, 0.25);
+      .hero-card {
+        padding: 24px;
+      }
+      .eyebrow {
+        display: inline-flex;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(79,140,255,0.25);
+        background: rgba(79,140,255,0.12);
+        color: #dcebff;
+        font-size: 12px;
+      }
+      .hero-card h2 {
+        margin: 14px 0 10px;
+        font-size: clamp(28px, 5vw, 42px);
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+      }
+      .hero-card p {
+        margin: 0;
+        color: var(--muted);
+        max-width: 60ch;
+        line-height: 1.6;
+      }
+      .hero-points {
+        display: grid;
+        gap: 10px;
+        align-content: start;
+      }
+      .mini-panel {
+        padding: 16px;
+      }
+      .mini-panel strong { display: block; font-size: 13px; margin-bottom: 6px; }
+      .mini-panel span { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+      .content {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr);
+        gap: 16px;
+        align-items: start;
       }
       .panel-header {
-        padding: 16px 16px 14px;
-        border-bottom: 1px solid rgba(148,163,184,0.12);
-        background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
+        padding: 18px 18px 14px;
+        border-bottom: 1px solid rgba(148,163,184,0.1);
       }
-      .panel-header h2 { margin: 0; font-size: 15px; }
-      .panel-header p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
-      .panel-body { padding: 16px; }
+      .panel-header h3 { margin: 0; font-size: 16px; }
+      .panel-header p { margin: 6px 0 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
+      .panel-body { padding: 18px; }
       .stack { display: flex; flex-direction: column; gap: 14px; }
-      .field label { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; font-size: 13px; color: #c9d6f3; }
-      .field input, .field textarea, .field select {
+      .field label {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+        font-size: 13px;
+        color: #c9d6f3;
+      }
+      .mini { font-size: 12px; color: var(--muted); }
+      .field input,
+      .field textarea,
+      .field select {
         width: 100%;
         border-radius: 14px;
         border: 1px solid var(--line);
@@ -329,52 +223,31 @@
         color: var(--text);
         padding: 13px 14px;
         outline: none;
-        transition: border-color 0.2s ease, 
-                    box-shadow 0.2s ease, 
-                    background 0.2s ease,
-                    transform 0.2s ease;
       }
-      .field input:focus, .field textarea:focus, .field select:focus {
+      .field input:focus,
+      .field textarea:focus,
+      .field select:focus {
         border-color: rgba(79,140,255,0.6);
-        background: rgba(255,255,255,0.05);
-        box-shadow: 0 0 0 3px rgba(79,140,255,0.12), 0 8px 24px rgba(0,0,0,0.15);
-        transform: translateY(-1px);
+        box-shadow: 0 0 0 3px rgba(79,140,255,0.12);
       }
-      .field textarea { min-height: 120px; resize: vertical; }
-      .hint {
-        margin-top: 8px;
-        font-size: 12px;
-        color: var(--muted);
-        line-height: 1.45;
-      }
-      .quick-grid {
+      .field textarea { min-height: 116px; resize: vertical; }
+      .hint { margin-top: 8px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+      .grid-2 {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-      }
-      .quick {
-        padding: 12px;
-        border-radius: 14px;
-        border: 1px solid var(--line);
-        background: rgba(255,255,255,0.03);
-        color: var(--text);
-        text-align: left;
-      }
-      .quick strong { display: block; font-size: 13px; margin-bottom: 4px; }
-      .quick span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
-      .editor-wrap {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      }
-      .editor-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        grid-template-columns: 1fr 1fr;
         gap: 12px;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
         flex-wrap: wrap;
       }
-      .status-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .actions .btn { flex: 1 1 180px; }
+      .status-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
       .status {
         display: inline-flex;
         align-items: center;
@@ -385,23 +258,82 @@
         background: rgba(255,255,255,0.03);
         font-size: 12px;
         color: var(--muted);
-        transition: all 0.3s ease;
       }
       .status.good { color: #bdf7cf; border-color: rgba(34,197,94,0.28); background: rgba(34,197,94,0.08); }
       .status.warn { color: #ffd58a; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
-      .code-shell {
-        margin-top: 14px;
+
+      .summary-card,
+      .wallet-card,
+      .history-card,
+      .log-card,
+      .advanced-card {
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
         border-radius: 18px;
+        padding: 14px;
+      }
+      .summary-grid,
+      .kv {
+        display: grid;
+        gap: 10px;
+      }
+      .summary-item,
+      .kv-row {
+        padding: 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(148,163,184,0.08);
+        background: rgba(255,255,255,0.03);
+      }
+      .summary-item span:first-child,
+      .kv-row span:first-child {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .summary-item strong,
+      .kv-row code,
+      .inline-code {
+        color: #d5e1ff;
+        font-family: var(--mono);
+        font-size: 12px;
+        word-break: break-word;
+      }
+      .primary-stack { display: flex; flex-direction: column; gap: 12px; }
+      .deploy-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .deploy-actions .btn { width: 100%; }
+
+      details.advanced {
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.02);
+        overflow: hidden;
+      }
+      details.advanced summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        font-weight: 600;
+      }
+      details.advanced summary::-webkit-details-marker { display: none; }
+      details.advanced[open] summary { border-bottom: 1px solid rgba(148,163,184,0.08); }
+      .advanced-body { padding: 14px 16px 16px; }
+      .code-shell {
+        border-radius: 16px;
         border: 1px solid var(--line);
         background: #050915;
         overflow: hidden;
-        flex: 1;
-        min-height: 0;
       }
       .code-head {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 12px;
         padding: 12px 14px;
         border-bottom: 1px solid rgba(148,163,184,0.12);
         background: rgba(255,255,255,0.03);
@@ -411,12 +343,11 @@
       textarea.code {
         display: block;
         width: 100%;
-        height: calc(100% - 49px);
-        min-height: 520px;
+        min-height: 320px;
         background: transparent;
         color: var(--code);
         border: 0;
-        resize: none;
+        resize: vertical;
         outline: none;
         padding: 16px;
         font-family: var(--mono);
@@ -424,54 +355,14 @@
         line-height: 1.6;
         white-space: pre;
       }
-      .console {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-      .wallet-card, .deploy-card, .history-card {
-        border: 1px solid var(--line);
-        background: rgba(255,255,255,0.03);
-        border-radius: 18px;
-        padding: 14px;
-      }
-      .wallet-top, .deploy-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 12px;
-      }
-      .wallet-top h3, .deploy-top h3, .history-card h3 { margin: 0; font-size: 14px; }
-      .mini { font-size: 12px; color: var(--muted); }
-      .kv { display: grid; grid-template-columns: 1fr; gap: 10px; }
-      .kv-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        align-items: center;
-        padding: 10px 12px;
-        border-radius: 14px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(148,163,184,0.08);
-      }
-      .kv-row span:first-child { color: var(--muted); font-size: 12px; }
-      .kv-row code, .inline-code {
-        font-family: var(--mono);
-        font-size: 12px;
-        color: #d5e1ff;
-        word-break: break-all;
-      }
-      .deploy-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-      .deploy-actions .btn { width: 100%; }
       .log {
         margin-top: 12px;
         border-radius: 16px;
         border: 1px solid rgba(148,163,184,0.12);
         background: #050915;
         padding: 12px;
-        min-height: 170px;
-        max-height: 280px;
+        min-height: 140px;
+        max-height: 240px;
         overflow: auto;
         font-family: var(--mono);
         font-size: 12px;
@@ -482,25 +373,20 @@
       .log-line.good { color: #aef1c0; }
       .log-line.warn { color: #ffd58a; }
       .log-line.bad { color: #ff95a8; }
+
       .history-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
       .history-item {
         padding: 12px;
         border-radius: 16px;
         border: 1px solid rgba(148,163,184,0.1);
         background: rgba(255,255,255,0.03);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                    box-shadow 0.3s ease,
-                    border-color 0.3s ease,
-                    background 0.3s ease;
-        animation: slideUp 0.4s ease-out;
       }
-      .history-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 0 20px rgba(79, 140, 255, 0.08);
-        border-color: rgba(79, 140, 255, 0.3);
-        background: rgba(255,255,255,0.05);
+      .history-item .title {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
       }
-      .history-item .title { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
       .history-item strong { font-size: 13px; }
       .history-item .meta { margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.45; }
       .history-item .actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
@@ -513,112 +399,62 @@
         border-radius: 16px;
         background: rgba(255,255,255,0.02);
       }
-      .split { display: flex; gap: 10px; flex-wrap: wrap; }
-      .split > * { flex: 1 1 160px; }
-      .footer-note {
-        margin-top: 12px;
+      .footer {
+        padding-bottom: 28px;
         color: var(--muted);
         font-size: 12px;
-        line-height: 1.45;
+        line-height: 1.6;
       }
-      .chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 10px;
-        border-radius: 999px;
-        background: rgba(79,140,255,0.12);
-        color: #dcebff;
-        border: 1px solid rgba(79,140,255,0.25);
-        font-size: 12px;
-      }
-      .skeleton {
-        display: grid;
-        gap: 10px;
-      }
-      .skeleton div {
-        height: 12px; border-radius: 999px;
-        background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.08), rgba(255,255,255,0.04));
-      }
-      .skeleton div:nth-child(2) { width: 70%; }
-      .skeleton div:nth-child(3) { width: 45%; }
-      @media (max-width: 1280px) {
-        .grid { grid-template-columns: 320px 1fr; }
-        .panel.console-panel { grid-column: 1 / -1; }
-      }
-      @media (max-width: 900px) {
-        .topbar-inner { flex-direction: column; align-items: stretch; }
-        .top-actions { justify-content: flex-start; }
-        .layout { padding: 12px; }
-        .grid { grid-template-columns: 1fr; }
-        textarea.code { min-height: 420px; }
-        .deploy-actions { grid-template-columns: 1fr; }
-      }
-      /* Mobile responsive */
-      @media (max-width: 768px) {
-        .container {
-          padding: 1rem;
-        }
 
-        .top-actions {
+      .toast {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 999;
+        background: var(--panel-2);
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius-sm);
+        padding: 14px 18px;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 260px;
+        max-width: 420px;
+      }
+      .toast-icon { font-size: 20px; flex-shrink: 0; }
+      .toast-content { flex: 1; font-size: 14px; line-height: 1.4; }
+      .toast.success { border-color: var(--success); }
+      .toast.error { border-color: var(--danger); }
+      .toast.info { border-color: var(--accent); }
+      .toast.hiding { opacity: 0; transform: translateY(8px); transition: all 0.2s ease; }
+
+      @media (max-width: 980px) {
+        .hero,
+        .content {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 720px) {
+        .topbar-inner {
           flex-direction: column;
-          gap: 0.75rem;
           align-items: stretch;
         }
-
-        .pill {
-          justify-content: space-between;
+        .top-actions { justify-content: flex-start; }
+        .grid-2,
+        .deploy-actions {
+          grid-template-columns: 1fr;
         }
-
+        .actions .btn,
         .btn {
           width: 100%;
-          padding: 0.875rem 1rem;
-          font-size: 1rem;
         }
-
-        .deploy-actions {
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-
-        .deploy-actions .btn {
-          width: 100%;
-        }
-
-        .form-row {
-          flex-direction: column;
-        }
-
-        .form-row .form-group {
-          width: 100%;
-        }
-
-        .history-item {
-          padding: 0.875rem;
-        }
-
-        .history-meta {
-          flex-direction: column;
-          gap: 0.5rem;
-          align-items: flex-start;
-        }
-
-        .history-actions {
-          width: 100%;
-          justify-content: flex-start;
-        }
-      }
-
-      /* Toast positioning on mobile */
-      @media (max-width: 768px) {
-        #toast-container {
-          bottom: 1rem;
-          left: 1rem;
-          right: 1rem;
-        }
-
         .toast {
-          width: 100%;
+          right: 12px;
+          left: 12px;
+          bottom: 12px;
+          min-width: 0;
+          max-width: none;
         }
       }
     </style>
@@ -631,150 +467,177 @@
             <div class="logo">B</div>
             <div>
               <h1>Deploy on Base</h1>
-              <p>Simple form outside, Remix-ish deploy engine inside.</p>
+              <p>Simple token deploy flow. Fokus ke field penting saja.</p>
             </div>
           </div>
           <div class="top-actions">
             <div class="pill"><strong>Network</strong> <span id="network-pill">Base Mainnet</span></div>
             <div class="pill"><strong>Wallet</strong> <span id="wallet-pill">Not connected</span></div>
-            <div id="farcaster-pill" class="pill" style="display: none;"><strong>👤</strong> <span id="farcaster-username">—</span></div>
+            <div id="farcaster-pill" class="pill" style="display:none;"><strong>👤</strong> <span id="farcaster-username">—</span></div>
             <button id="connect-btn" class="btn primary">Connect Wallet</button>
           </div>
         </div>
       </header>
 
-      <main class="layout">
-        <div class="grid">
-          <aside class="panel">
+      <main class="main">
+        <section class="hero">
+          <div class="hero-card">
+            <span class="eyebrow">Base mini app</span>
+            <h2>Deploy token data on Base without ribet.</h2>
+            <p>
+              Isi nama token, supply, dan deskripsi. Sisanya biar app yang urus.
+              Tampilan advanced tetap ada kalau kamu butuh, tapi default-nya dibuat ringan dan fokus.
+            </p>
+          </div>
+          <div class="hero-points">
+            <div class="mini-panel">
+              <strong>Yang penting dulu</strong>
+              <span>Token name, initial supply, description, dan optional image.</span>
+            </div>
+            <div class="mini-panel">
+              <strong>Base ready</strong>
+              <span>Pilih Base Mainnet atau Base Sepolia lalu deploy langsung dari wallet.</span>
+            </div>
+            <div class="mini-panel">
+              <strong>Advanced kalau perlu</strong>
+              <span>Source preview, compile, batch deploy, dan live log dipindah ke bagian advanced.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="content">
+          <section class="panel">
             <div class="panel-header">
-              <h2>Simple deploy form</h2>
-              <p>Isi nama, jumlah, deskripsi, dan image. Sisanya dikerjakan engine deploy di belakang layar.</p>
+              <h3>Simple token form</h3>
+              <p>Form utama sekarang dipotong ke field inti yang benar-benar kepakai.</p>
             </div>
             <div class="panel-body stack">
-              <div class="chip">Quest-ready • deploy contract on Base</div>
               <div class="field">
-                <label for="project-name"><span>Nama project</span><span class="mini">Required</span></label>
-                <input id="project-name" type="text" placeholder="Base Quest Registry" value="Base Quest Registry" />
+                <label for="project-name"><span>Token name</span><span class="mini">Required</span></label>
+                <input id="project-name" type="text" placeholder="Base Quest Token" value="Base Quest Token" />
               </div>
-              <div class="field">
-                <label for="project-amount"><span>Jumlah</span><span class="mini">uint256</span></label>
-                <input id="project-amount" type="number" min="1" step="1" placeholder="5" value="5" />
-              </div>
-              <div class="field">
-                <label for="project-description"><span>Deskripsi</span><span class="mini">Required</span></label>
-                <textarea id="project-description" placeholder="Short description about the contract or project.">Simple Base deploy template built from a Remix-like interface.</textarea>
-              </div>
-              <div class="field">
-                <label for="image-uri"><span>Image</span><span class="mini">URL / IPFS URI</span></label>
-                <input id="image-uri" type="text" placeholder="https://... or ipfs://..." value="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80" />
-                <div class="hint">Tidak ada backend. Pakai URL publik atau IPFS URI. Data ini disimpan sebagai string di contract.</div>
-              </div>
-              <div class="split">
-                <button id="fill-sample-btn" class="btn ghost small">Fill sample</button>
-                <button id="reset-btn" class="btn ghost small">Reset</button>
-              </div>
-              <div class="field">
-                <label for="chain-select"><span>Target chain</span><span class="mini">Quest recommended</span></label>
-                <select id="chain-select">
-                  <option value="base" selected>Base Mainnet (8453)</option>
-                  <option value="base-sepolia">Base Sepolia (84532)</option>
-                </select>
-              </div>
-              <div class="footer-note">
-                UI ini sengaja simpel buat user. Tapi mesin deploy di kanan dibuat terasa seperti Remix: compile, wallet connect, deploy, log, dan history.
-              </div>
-            </div>
-          </aside>
 
-          <section class="panel editor-panel">
-            <div class="panel-header">
-              <div class="editor-toolbar">
-                <div>
-                  <h2>Remix-style contract engine</h2>
-                  <p>Source contract, compile status, dan deployment flow ditampilkan di sini.</p>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="project-amount"><span>Initial supply</span><span class="mini">uint256</span></label>
+                  <input id="project-amount" type="number" min="1" step="1" placeholder="1000000" value="1000000" />
                 </div>
-                <div class="status-row">
-                  <span id="compile-status" class="status warn">Waiting for contract template</span>
-                  <span id="artifact-status" class="status">Artifact loading...</span>
+                <div class="field">
+                  <label for="chain-select"><span>Target chain</span><span class="mini">Choose one</span></label>
+                  <select id="chain-select">
+                    <option value="base" selected>Base Mainnet (8453)</option>
+                    <option value="base-sepolia">Base Sepolia (84532)</option>
+                  </select>
                 </div>
               </div>
-            </div>
-            <div class="panel-body editor-wrap">
-              <div class="code-shell">
-                <div class="code-head">
-                  <div>
-                    <strong>contracts/DeployOnBase.sol</strong>
-                    <span id="source-meta">generated preview</span>
-                  </div>
-                  <div class="split" style="flex:0 0 auto;">
-                    <button id="compile-btn" class="btn small">Compile</button>
-                    <button id="deploy-btn" class="btn primary small">Deploy Contract</button>
-                  </div>
-                </div>
-                <textarea id="source-preview" class="code" readonly spellcheck="false">Loading source...</textarea>
+
+              <div class="field">
+                <label for="project-description"><span>Token description</span><span class="mini">Required</span></label>
+                <textarea id="project-description" placeholder="Short description about the token.">Simple token-style deploy on Base with clean metadata and a lightweight form.</textarea>
+              </div>
+
+              <div class="field">
+                <label for="image-uri"><span>Image URI</span><span class="mini">Optional</span></label>
+                <input id="image-uri" type="text" placeholder="https://... or ipfs://..." value="" />
+                <div class="hint">Kalau kosong, app akan pakai image default. Jadi kamu bisa langsung deploy tanpa ribet isi semua.</div>
+              </div>
+
+              <div class="actions">
+                <button id="deploy-btn" class="btn primary">Deploy on Base</button>
+                <button id="fill-sample-btn" class="btn ghost">Use sample</button>
+                <button id="reset-btn" class="btn ghost">Reset</button>
+              </div>
+
+              <div class="status-row">
+                <span id="compile-status" class="status warn">Waiting for contract template</span>
+                <span id="artifact-status" class="status">Artifact loading...</span>
               </div>
             </div>
           </section>
 
-          <section class="panel console-panel">
+          <section class="panel">
             <div class="panel-header">
-              <h2>Deploy console</h2>
-              <p>Wallet status, tx hash, contract address, dan deployment history.</p>
+              <h3>Deploy summary</h3>
+              <p>Status wallet, hasil deploy terakhir, dan riwayat singkat.</p>
             </div>
-            <div class="panel-body console">
-              <div class="wallet-card">
-                <div class="wallet-top">
-                  <h3>Wallet</h3>
-                  <span id="connection-state" class="status">Disconnected</span>
+            <div class="panel-body primary-stack">
+              <div class="summary-card">
+                <div class="summary-grid">
+                  <div class="summary-item">
+                    <span>Connection</span>
+                    <strong id="connection-state">Disconnected</strong>
+                  </div>
+                  <div class="summary-item">
+                    <span>Wallet address</span>
+                    <strong id="wallet-address">—</strong>
+                  </div>
+                  <div class="summary-item">
+                    <span>Target chain</span>
+                    <strong id="wallet-chain">Base Mainnet</strong>
+                  </div>
                 </div>
+              </div>
+
+              <div class="wallet-card">
                 <div class="kv">
                   <div class="kv-row">
-                    <span>Address</span>
-                    <code id="wallet-address">—</code>
-                  </div>
-                  <div class="kv-row">
-                    <span>Chain</span>
-                    <code id="wallet-chain">Base Mainnet</code>
-                  </div>
-                  <div class="kv-row">
-                    <span>Tx hash</span>
+                    <span>Latest tx hash</span>
                     <code id="tx-hash">—</code>
                   </div>
                   <div class="kv-row">
-                    <span>Contract</span>
+                    <span>Latest contract</span>
                     <code id="contract-address">—</code>
                   </div>
                 </div>
                 <div class="deploy-actions">
-                  <button id="deploy-5-btn" class="btn ghost">Deploy x5</button>
                   <button id="copy-address-btn" class="btn ghost">Copy address</button>
-                  <button id="open-basescan-btn" class="btn ghost" style="display: none;">Open BaseScan</button>
-                </div>
-              </div>
-
-              <div class="deploy-card">
-                <div class="deploy-top">
-                  <h3>Status log</h3>
-                  <span class="mini">Live</span>
-                </div>
-                <div id="log" class="log" aria-live="polite">
-                  <div class="log-line info">[info] Ready. Connect wallet to start.</div>
+                  <button id="open-basescan-btn" class="btn ghost" style="display:none;">Open BaseScan</button>
+                  <button id="deploy-5-btn" class="btn ghost">Deploy x5</button>
+                  <button id="clear-history-btn" class="btn ghost">Clear history</button>
                 </div>
               </div>
 
               <div class="history-card">
-                <div class="deploy-top">
-                  <h3>Deployment history</h3>
-                  <button id="clear-history-btn" class="btn small ghost">Clear</button>
-                </div>
+                <h3 style="margin:0 0 12px; font-size:14px;">Recent deployments</h3>
                 <div id="history-list" class="history-list">
-                  <div class="empty">Belum ada deployment. Setelah deploy sukses, hasilnya akan muncul di sini.</div>
+                  <div class="empty">Belum ada deployment. Setelah deploy sukses, hasilnya muncul di sini.</div>
                 </div>
               </div>
+
+              <details class="advanced">
+                <summary>Advanced deploy tools</summary>
+                <div class="advanced-body stack">
+                  <div class="advanced-card">
+                    <div class="actions" style="margin-bottom:12px;">
+                      <button id="compile-btn" class="btn small">Compile</button>
+                    </div>
+                    <div class="code-shell">
+                      <div class="code-head">
+                        <div>
+                          <strong>contracts/DeployOnBase.sol</strong>
+                          <span id="source-meta">generated preview</span>
+                        </div>
+                      </div>
+                      <textarea id="source-preview" class="code" readonly spellcheck="false">Loading source...</textarea>
+                    </div>
+                  </div>
+
+                  <div class="log-card">
+                    <h3 style="margin:0; font-size:14px;">Status log</h3>
+                    <div id="log" class="log" aria-live="polite">
+                      <div class="log-line info">[info] Ready. Connect wallet to start.</div>
+                    </div>
+                  </div>
+                </div>
+              </details>
             </div>
           </section>
-        </div>
+        </section>
       </main>
+
+      <div class="footer">
+        Form ini sengaja dipangkas supaya user fokus ke data penting. Bagian teknis masih tersedia di advanced section kalau kamu butuh debug atau cek source.
+      </div>
     </div>
 
     <script type="module" src="./app.js"></script>
