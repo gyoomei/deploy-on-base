@@ -238,16 +238,12 @@ function sleep(ms) {
 }
 
 async function waitForTransactionReceipt(txHash, maxAttempts = 120, delayMs = 2000) {
-  if (!state.provider?.request) {
-    throw new Error('Provider unavailable while waiting for receipt.');
-  }
+  const ethers = window.ethers;
+  const rpcUrl = activeChain().rpcUrls[0];
+  const receiptProvider = new ethers.JsonRpcProvider(rpcUrl, activeChain().chainId);
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    const receipt = await state.provider.request({
-      method: 'eth_getTransactionReceipt',
-      params: [txHash],
-    });
-
+    const receipt = await receiptProvider.getTransactionReceipt(txHash);
     if (receipt) return receipt;
     await sleep(delayMs);
   }
