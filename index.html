@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Deploy on Base</title>
     <meta
       name="description"
@@ -102,7 +102,6 @@
         box-shadow: 0 14px 32px rgba(79, 140, 255, 0.28);
       }
       .brand h1 { margin: 0; font-size: 16px; }
-      .brand p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
       .top-actions {
         display: flex;
         align-items: center;
@@ -438,6 +437,26 @@
       .toast.error { border-color: var(--danger); }
       .toast.info { border-color: var(--accent); }
       .toast.hiding { opacity: 0; transform: translateY(8px); transition: all 0.2s ease; }
+      .success-burst {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1200;
+      }
+      .success-burst span {
+        position: absolute;
+        left: 50%;
+        top: 52%;
+        font-size: 28px;
+        opacity: 0;
+        animation: burst-float 1.6s ease-out forwards;
+        animation-delay: var(--delay, 0ms);
+      }
+      @keyframes burst-float {
+        0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+        18% { opacity: 1; }
+        100% { transform: translate(calc(-50% + (var(--x, 0) * 48px)), calc(-50% - 140px)) scale(1.15); opacity: 0; }
+      }
 
       @media (max-width: 980px) {
         .hero,
@@ -446,18 +465,48 @@
         }
       }
       @media (max-width: 720px) {
+        body {
+          padding-bottom: env(safe-area-inset-bottom);
+        }
+        .main {
+          padding: 14px 0 calc(110px + env(safe-area-inset-bottom));
+        }
         .topbar-inner {
           flex-direction: column;
           align-items: stretch;
         }
-        .top-actions { justify-content: flex-start; }
-        .grid-2,
-        .deploy-actions {
+        .top-actions {
+          justify-content: flex-start;
+          display: grid;
           grid-template-columns: 1fr;
+        }
+        .top-actions .pill,
+        .top-actions .btn {
+          width: 100%;
+          justify-content: space-between;
+        }
+        .panel-body {
+          padding: 16px;
+        }
+        .grid-2,
+        .deploy-actions,
+        .summary-grid {
+          grid-template-columns: 1fr;
+        }
+        .actions {
+          position: sticky;
+          bottom: 0;
+          z-index: 5;
+          padding-top: 12px;
+          background: linear-gradient(180deg, rgba(8,17,31,0), rgba(8,17,31,0.92) 36%, rgba(8,17,31,1));
         }
         .actions .btn,
         .btn {
           width: 100%;
+        }
+        #deploy-btn {
+          min-height: 54px;
+          font-weight: 800;
         }
         .toast {
           right: 12px;
@@ -482,7 +531,6 @@
           <div class="top-actions">
             <div class="pill"><strong>Network</strong> <span id="network-pill">Base Mainnet</span></div>
             <div class="pill"><strong>Wallet</strong> <span id="wallet-pill">Not connected</span></div>
-            <div id="farcaster-pill" class="pill" style="display:none;"><strong>👤</strong> <span id="farcaster-username">—</span></div>
             <button id="connect-btn" class="btn primary">Connect Wallet</button>
           </div>
         </div>
@@ -495,9 +543,15 @@
               <h3>Deploy token</h3>
             </div>
             <div class="panel-body stack">
-              <div class="field">
-                <label for="project-name"><span>Token name</span><span class="mini">Required</span></label>
-                <input id="project-name" type="text" placeholder="Base Quest Token" value="Base Quest Token" />
+              <div class="grid-2">
+                <div class="field">
+                  <label for="project-name"><span>Token name</span><span class="mini">Required</span></label>
+                  <input id="project-name" type="text" placeholder="Base Quest Token" value="Base Quest Token" />
+                </div>
+                <div class="field">
+                  <label for="token-symbol"><span>Token symbol</span><span class="mini">2-10 chars</span></label>
+                  <input id="token-symbol" type="text" maxlength="10" placeholder="BQT" value="BQT" />
+                </div>
               </div>
 
               <div class="grid-2">
@@ -516,13 +570,13 @@
 
               <div class="field">
                 <label for="project-description"><span>Token description</span><span class="mini">Required</span></label>
-                <textarea id="project-description" placeholder="Short description about the token.">Simple token-style deploy on Base with clean metadata and a lightweight form.</textarea>
+                <textarea id="project-description" placeholder="Short description about the token.">Deploy a token metadata contract on Base with a simple mobile-first flow.</textarea>
               </div>
 
               <div class="field">
                 <label for="image-uri"><span>Image URI</span><span class="mini">Optional</span></label>
                 <input id="image-uri" type="text" placeholder="https://... or ipfs://..." value="" />
-                <div class="hint">If left empty, the app uses a default image so you can deploy without filling every field.</div>
+                <div class="hint">Leave this blank to use the default token image.</div>
               </div>
 
               <div class="actions">
@@ -541,7 +595,7 @@
           <section class="panel">
             <div class="panel-header">
               <h3>Deploy summary</h3>
-              <p>Status wallet, hasil deploy terakhir, dan riwayat singkat.</p>
+              <p>Built for quick mobile checks before, during, and after deployment.</p>
             </div>
             <div class="panel-body primary-stack">
               <div class="summary-card">
@@ -583,7 +637,7 @@
               <div class="history-card">
                 <h3 style="margin:0 0 12px; font-size:14px;">Recent deployments</h3>
                 <div id="history-list" class="history-list">
-                  <div class="empty">Belum ada deployment. Setelah deploy sukses, hasilnya muncul di sini.</div>
+                  <div class="empty">No deployments yet. Successful deployments will appear here.</div>
                 </div>
               </div>
 
@@ -608,7 +662,7 @@
                   <div class="log-card">
                     <h3 style="margin:0; font-size:14px;">Status log</h3>
                     <div id="log" class="log" aria-live="polite">
-                      <div class="log-line info">[info] Ready. Connect wallet to start.</div>
+                      <div class="log-line info">[info] Ready. Waiting for wallet connection.</div>
                     </div>
                   </div>
                 </div>
@@ -619,10 +673,11 @@
       </main>
 
       <div class="footer">
-        This interface is intentionally trimmed down so users can focus on the key data first. Technical tools remain available in the advanced section for debugging and source review.
+Mobile-first deployment flow with advanced tools available when needed.
       </div>
     </div>
 
     <script type="module" src="./app.js"></script>
   </body>
 </html>
+

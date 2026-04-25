@@ -32,8 +32,9 @@ const TEMPLATES = {
 
 const DEFAULTS = {
   projectName: 'Base Quest Token',
+  tokenSymbol: 'BQT',
   amount: '1000000',
-  description: 'Simple token-style deploy on Base with clean metadata and a lightweight form.',
+  description: 'Deploy a token metadata contract on Base with a simple mobile-first flow.',
   imageUri: 'https://deploy-on-base.vercel.app/assets/og.png',
 };
 
@@ -68,16 +69,15 @@ const state = {
   latestTxHash: '',
   isCompiling: false,
   isDeploying: false,
-  currentTemplate: 'storage',
-  farcasterUser: null, // { fid, username, displayName, pfpUrl }
+  isAutoConnecting: false,
+  hasAutoConnectAttempted: false,
+  boundProvider: null,
 };
 
 const els = {
   connectBtn: document.getElementById('connect-btn'),
   networkPill: document.getElementById('network-pill'),
   walletPill: document.getElementById('wallet-pill'),
-  farcasterPill: document.getElementById('farcaster-pill'),
-  farcasterUsername: document.getElementById('farcaster-username'),
   connectionState: document.getElementById('connection-state'),
   walletAddress: document.getElementById('wallet-address'),
   walletChain: document.getElementById('wallet-chain'),
@@ -92,8 +92,8 @@ const els = {
   fillSampleBtn: document.getElementById('fill-sample-btn'),
   resetBtn: document.getElementById('reset-btn'),
   chainSelect: document.getElementById('chain-select'),
-  templateSelect: document.getElementById('template-select'),
   projectName: document.getElementById('project-name'),
+  tokenSymbol: document.getElementById('token-symbol'),
   projectAmount: document.getElementById('project-amount'),
   projectDescription: document.getElementById('project-description'),
   imageUri: document.getElementById('image-uri'),
@@ -143,6 +143,7 @@ function escapeHtml(text) {
 function draftValues() {
   return {
     projectName: els.projectName.value.trim(),
+    tokenSymbol: els.tokenSymbol.value.trim().toUpperCase(),
     amount: els.projectAmount.value.trim(),
     description: els.projectDescription.value.trim(),
     imageUri: els.imageUri.value.trim() || DEFAULTS.imageUri,
@@ -151,17 +152,21 @@ function draftValues() {
 
 function validateDraft(draft) {
   const errors = [];
-  if (!draft.projectName) errors.push('Token name wajib diisi.');
-  if (!draft.amount) errors.push('Initial supply wajib diisi.');
-  if (!Number.isInteger(Number(draft.amount)) || Number(draft.amount) <= 0) {
-    errors.push('Initial supply harus angka bulat lebih dari 0.');
+  if (!draft.projectName) errors.push('Token name is required.');
+  if (!draft.tokenSymbol) errors.push('Token symbol is required.');
+  if (!/^[A-Z0-9]{2,10}$/.test(draft.tokenSymbol)) {
+    errors.push('Token symbol must be 2-10 uppercase letters or numbers.');
   }
-  if (!draft.description) errors.push('Token description wajib diisi.');
+  if (!draft.amount) errors.push('Initial supply is required.');
+  if (!Number.isInteger(Number(draft.amount)) || Number(draft.amount) <= 0) {
+    errors.push('Initial supply must be an integer greater than 0.');
+  }
+  if (!draft.description) errors.push('Token description is required.');
   return errors;
 }
 
 function generatePreviewSource(draft) {
-  const summary = `/*\n  Draft values used for this deploy:\n  - tokenName: ${draft.projectName}\n  - initialSupply: ${draft.amount}\n  - tokenDescription: ${draft.description}\n  - imageUri: ${draft.imageUri}\n*/`;
+  const summary = `/*\n  Draft values used for this deploy:\n  - tokenName: ${draft.projectName}\n  - tokenSymbol: ${draft.tokenSymbol}\n  - initialSupply: ${draft.amount}\n  - tokenDescription: ${draft.description}\n  - imageUri: ${draft.imageUri}\n*/`;
   return `${summary}\n\n${state.baseSource}`;
 }
 
@@ -185,7 +190,7 @@ function showToast(message, type = 'info') {
   toast.className = `toast ${type}`;
   
   const icons = {
-    success: '✓',
+    success: '🎉',
     error: '✗',
     info: 'ℹ',
   };
@@ -207,6 +212,15 @@ function toastLog(message) {
   log('info', message);
 }
 
+function celebrateSuccess() {
+  const burst = document.createElement('div');
+  burst.className = 'success-burst';
+  burst.setAttribute('aria-hidden', 'true');
+  burst.innerHTML = Array.from({ length: 18 }, (_, i) => `<span style="--x:${(i % 6) - 2.5};--delay:${i * 35}ms;">🎉</span>`).join('');
+  document.body.appendChild(burst);
+  setTimeout(() => burst.remove(), 2200);
+}
+
 function renderSource() {
   if (!state.baseSource) return;
   const draft = draftValues();
@@ -221,7 +235,7 @@ function renderWallet() {
     els.walletPill.textContent = shortAddress(state.address);
     els.walletAddress.textContent = state.address;
     setStatus(els.connectionState, 'good', 'Connected');
-    els.connectBtn.textContent = 'Connected';
+    els.connectBtn.textContent = shortAddress(state.address);
   } else {
     els.walletPill.textContent = 'Not connected';
     els.walletAddress.textContent = '—';
@@ -231,6 +245,24 @@ function renderWallet() {
   const chain = activeChain();
   els.networkPill.textContent = chain.label;
   els.walletChain.textContent = `${chain.label} (${chain.chainId})`;
+}
+
+function bindProviderEvents(provider) {
+  if (!provider?.on || state.boundProvider === provider) return;
+
+  provider.on('accountsChanged', async (accounts) => {
+    if (!accounts || accounts.length === 0) {
+      state.address = '';
+      state.signer = null;
+      renderWallet();
+      return;
+    }
+    try {
+      await connectWallet({ prompt: false, silent: true });
+    } catch {}
+  });
+
+  state.boundProvider = provider;
 }
 
 function sleep(ms) {
@@ -267,7 +299,7 @@ function renderTransactionState(txHash = '—', contractAddress = '—') {
 
 function renderHistory() {
   if (!state.history.length) {
-    els.historyList.innerHTML = '<div class="empty">Belum ada deployment. Setelah deploy sukses, hasilnya akan muncul di sini.</div>';
+    els.historyList.innerHTML = '<div class="empty">No deployments yet. Successful deployments will appear here.</div>';
     return;
   }
   els.historyList.innerHTML = state.history
@@ -276,11 +308,11 @@ function renderHistory() {
       return `
         <div class="history-item">
           <div class="title">
-            <strong>${escapeHtml(item.projectName)}</strong>
+            <strong>${escapeHtml(item.projectName)} (${escapeHtml(item.tokenSymbol)})</strong>
             <span class="mini">${escapeHtml(item.chainLabel)}</span>
           </div>
           <div class="meta">
-            Amount: <span class="inline-code">${escapeHtml(item.amount)}</span><br />
+            Initial supply: <span class="inline-code">${escapeHtml(item.amount)}</span><br />
             Address: <span class="inline-code">${escapeHtml(shortAddress(item.contractAddress))}</span><br />
             Tx: <span class="inline-code">${escapeHtml(shortHash(item.txHash))}</span><br />
             ${escapeHtml(when)}
@@ -363,14 +395,26 @@ async function switchNetwork(provider, chain) {
   }
 }
 
-async function connectWallet() {
+async function connectWallet({ prompt = true, silent = false } = {}) {
   const provider = await getProvider();
   const chain = activeChain();
-  setStatus(els.connectionState, 'warn', 'Connecting...');
+
+  if (!silent) {
+    setStatus(els.connectionState, 'warn', 'Connecting...');
+  }
   els.connectBtn.classList.add('loading');
   els.connectBtn.disabled = true;
-  
+
   try {
+    if (prompt) {
+      await provider.request({ method: 'eth_requestAccounts' });
+    } else {
+      const accounts = await provider.request({ method: 'eth_accounts' }).catch(() => []);
+      if (!accounts || accounts.length === 0) {
+        return false;
+      }
+    }
+
     await switchNetwork(provider, chain);
     const ethers = window.ethers;
     const browserProvider = new ethers.BrowserProvider(provider);
@@ -379,19 +423,45 @@ async function connectWallet() {
     state.provider = provider;
     state.signer = signer;
     state.address = address;
+    bindProviderEvents(provider);
     renderWallet();
     log('good', `Wallet connected: ${address}`);
     log('info', `Network ready: ${chain.label}`);
-    showToast('Wallet connected successfully', 'success');
+    if (!silent) {
+      showToast('Wallet connected successfully', 'success');
+    }
+    return true;
   } catch (error) {
     const msg = error?.shortMessage || error?.message || String(error);
-    log('bad', msg);
-    setStatus(els.connectionState, 'warn', 'Connection failed');
-    showToast(msg, 'error');
+    if (!silent) {
+      log('bad', msg);
+      setStatus(els.connectionState, 'warn', 'Connection failed');
+      showToast(msg, 'error');
+    }
     throw error;
   } finally {
     els.connectBtn.classList.remove('loading');
     els.connectBtn.disabled = false;
+  }
+}
+
+async function autoConnectWallet() {
+  if (state.hasAutoConnectAttempted) return false;
+  state.hasAutoConnectAttempted = true;
+  state.isAutoConnecting = true;
+
+  try {
+    const provider = await getProvider();
+    const isExtensionProvider = !!window.ethereum?.request && provider === window.ethereum;
+    const shouldPrompt = !isExtensionProvider;
+    const connected = await connectWallet({ prompt: shouldPrompt, silent: true });
+    return Boolean(connected);
+  } catch (error) {
+    log('info', `Auto-connect skipped: ${error?.message || String(error)}`);
+    return false;
+  } finally {
+    state.isAutoConnecting = false;
+    renderWallet();
   }
 }
 
@@ -415,7 +485,7 @@ async function deployOnce() {
   const draft = draftValues();
   const errors = validateDraft(draft);
   if (errors.length) {
-    setStatus(els.compileStatus, 'warn', 'Fix form errors first');
+    setStatus(els.compileStatus, 'warn', 'Fix the form errors first');
     errors.forEach((error) => log('bad', error));
     return;
   }
@@ -440,10 +510,10 @@ async function deployOnce() {
     const ethers = window.ethers;
     const factory = new ethers.ContractFactory(state.artifact.abi, state.artifact.bytecode, state.signer);
     const amount = ethers.toBigInt(draft.amount);
-    const deployTxRequest = await factory.getDeployTransaction(draft.projectName, amount, draft.description, draft.imageUri);
+    const deployTxRequest = await factory.getDeployTransaction(draft.projectName, draft.tokenSymbol, amount, draft.description, draft.imageUri);
     deployTxRequest.gasLimit = activeChain().chainId === 8453 ? 3500000n : 4000000n;
 
-    log('info', `Preparing deploy for token ${draft.projectName}`);
+    log('info', `Preparing deploy for token ${draft.projectName} (${draft.tokenSymbol})`);
     setStatus(els.compileStatus, 'good', 'Compiled template ready ✓');
 
     const tx = await state.signer.sendTransaction(deployTxRequest);
@@ -462,10 +532,12 @@ async function deployOnce() {
     renderTransactionState(tx.hash, contractAddress);
     log('good', `Contract deployed: ${contractAddress}`);
     log('good', `Open on explorer: ${currentExplorerBase()}/address/${contractAddress}`);
-    showToast(`Token deployed: ${shortAddress(contractAddress)}`, 'success');
+    celebrateSuccess();
+    showToast(`🎉 ${draft.projectName} (${draft.tokenSymbol}) deployed successfully.`, 'success');
 
     registerHistory({
       projectName: draft.projectName,
+      tokenSymbol: draft.tokenSymbol,
       amount: draft.amount,
       description: draft.description,
       imageUri: draft.imageUri,
@@ -475,11 +547,7 @@ async function deployOnce() {
       createdAt: Date.now(),
     });
 
-    setStatus(els.compileStatus, 'good', 'Deployment success ✓');
-    
-    // Farcaster share prompt
-    await promptShare(draft.projectName, contractAddress, tx.hash);
-    
+    setStatus(els.compileStatus, 'good', 'Deployment successful');
     return true;
   } catch (error) {
     console.error(error);
@@ -514,12 +582,12 @@ async function deployMany(times) {
   const draft = draftValues();
   const errors = validateDraft(draft);
   if (errors.length) {
-    setStatus(els.compileStatus, 'warn', 'Fix form errors first');
+    setStatus(els.compileStatus, 'warn', 'Fix the form errors first');
     errors.forEach((error) => log('bad', error));
-    showToast('Fix form errors first', 'error');
+    showToast('Fix the form errors first.', 'error');
     return;
   }
-  log('warn', `Quest mode: deploying ${times} contracts sequentially.`);
+  log('warn', `Batch mode: deploying ${times} contracts sequentially.`);
   showToast(`Starting batch deploy: ${times} contracts`, 'info');
   
   let successCount = 0;
@@ -549,9 +617,9 @@ async function compileTemplate() {
   const draft = draftValues();
   const errors = validateDraft(draft);
   if (errors.length) {
-    setStatus(els.compileStatus, 'warn', 'Fix form errors first');
+    setStatus(els.compileStatus, 'warn', 'Fix the form errors first');
     errors.forEach((error) => log('bad', error));
-    showToast('Fix form errors first', 'error');
+    showToast('Fix the form errors first.', 'error');
     return;
   }
   state.isCompiling = true;
@@ -571,46 +639,20 @@ async function compileTemplate() {
 
 function fillSample() {
   els.projectName.value = 'Gyoo Token';
+  els.tokenSymbol.value = 'GYOO';
   els.projectAmount.value = '1000000';
-  els.projectDescription.value = 'Community token deployed on Base with a clean, minimal form.';
+  els.projectDescription.value = 'Community token deployed on Base with a clean, mobile-first flow.';
   els.imageUri.value = DEFAULTS.imageUri;
   renderSource();
 }
 
 function resetForm() {
   els.projectName.value = DEFAULTS.projectName;
+  els.tokenSymbol.value = DEFAULTS.tokenSymbol;
   els.projectAmount.value = DEFAULTS.amount;
   els.projectDescription.value = DEFAULTS.description;
   els.imageUri.value = '';
   renderSource();
-}
-
-async function promptShare(projectName, contractAddress, txHash) {
-  try {
-    const appUrl = window.location.origin + window.location.pathname;
-    const explorerUrl = `${currentExplorerBase()}/address/${contractAddress}`;
-    const chain = activeChain();
-    
-    // Build share text with user context if available
-    let text = `Just deployed ${projectName} on ${chain.label} 🚀⚡\n\n`;
-    
-    if (state.farcasterUser) {
-      text += `Built by @${state.farcasterUser.username}\n`;
-    }
-    
-    text += `Contract: ${shortAddress(contractAddress)}\n`;
-    text += `\nDeploy your token on Base with a simple form — fill the important fields and go.`;
-    
-    await sdk.actions.composeCast({
-      text,
-      embeds: [explorerUrl, appUrl],
-    });
-    
-    showToast('Cast composer opened', 'success');
-    log('info', 'Share dialog opened');
-  } catch (error) {
-    console.warn('Farcaster share unavailable:', error);
-  }
 }
 
 async function copyLatestAddress() {
@@ -635,34 +677,11 @@ function wireHistoryActions() {
     if (copyAddress) {
       await navigator.clipboard.writeText(copyAddress);
       log('good', `Copied historical address: ${copyAddress}`);
-      showToast('Address copied to clipboard', 'success');
+      showToast('Contract address copied.', 'success');
     }
     if (openTx) openExplorer(`/tx/${openTx}`);
     if (openAddress) openExplorer(`/address/${openAddress}`);
   });
-}
-
-async function loadFarcasterContext() {
-  try {
-    const context = await sdk.context;
-    if (context?.user) {
-      state.farcasterUser = {
-        fid: context.user.fid,
-        username: context.user.username,
-        displayName: context.user.displayName,
-        pfpUrl: context.user.pfpUrl,
-      };
-      
-      // Show Farcaster user pill
-      els.farcasterUsername.textContent = `@${context.user.username}`;
-      els.farcasterPill.style.display = 'inline-flex';
-      
-      log('info', `Farcaster user: @${context.user.username} (fid: ${context.user.fid})`);
-      showToast(`Welcome @${context.user.username}!`, 'info');
-    }
-  } catch (error) {
-    console.warn('Farcaster context unavailable (fine outside Farcaster):', error);
-  }
 }
 
 async function init() {
@@ -671,9 +690,6 @@ async function init() {
   } catch (error) {
     console.warn('sdk.actions.ready() failed (fine outside Farcaster):', error);
   }
-
-  // Load Farcaster user context
-  await loadFarcasterContext();
 
   renderWallet();
   renderHistory();
@@ -693,7 +709,7 @@ async function init() {
     log('info', `Switched target chain to ${activeChain().label}`);
   });
 
-  [els.projectName, els.projectAmount, els.projectDescription, els.imageUri].forEach((input) => {
+  [els.projectName, els.tokenSymbol, els.projectAmount, els.projectDescription, els.imageUri].forEach((input) => {
     input.addEventListener('input', () => {
       renderSource();
     });
@@ -756,11 +772,11 @@ async function init() {
 
   renderSource();
   if (!state.history.length) renderHistory();
-  
-  // Show welcome toast
-  setTimeout(() => {
-    showToast('Deploy on Base ready. Fill token details and connect wallet.', 'info');
-  }, 800);
+
+  try {
+    await autoConnectWallet();
+  } catch {}
 }
 
 void init();
+
