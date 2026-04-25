@@ -216,9 +216,27 @@ function celebrateSuccess() {
   const burst = document.createElement('div');
   burst.className = 'success-burst';
   burst.setAttribute('aria-hidden', 'true');
-  burst.innerHTML = Array.from({ length: 18 }, (_, i) => `<span style="--x:${(i % 6) - 2.5};--delay:${i * 35}ms;">🎉</span>`).join('');
+
+  const particles = Array.from({ length: 24 }, (_, i) => {
+    const angle = (Math.PI * 2 * i) / 24;
+    const distance = 90 + (i % 4) * 26;
+    const x = Math.cos(angle) * distance;
+    const y = Math.sin(angle) * distance * -1;
+    const rotate = (i % 2 === 0 ? 1 : -1) * (18 + i * 3);
+    const scale = 0.8 + (i % 5) * 0.08;
+    return `<span class="burst-emoji" style="--tx:${x.toFixed(1)}px;--ty:${y.toFixed(1)}px;--rot:${rotate}deg;--scale:${scale.toFixed(2)};--delay:${i * 22}ms;">${i % 3 === 0 ? '✨' : '🎉'}</span>`;
+  }).join('');
+
+  burst.innerHTML = `
+    <div class="success-core"></div>
+    <div class="success-ring success-ring-a"></div>
+    <div class="success-ring success-ring-b"></div>
+    <div class="success-chip">🎉 Deployment Successful</div>
+    ${particles}
+  `;
+
   document.body.appendChild(burst);
-  setTimeout(() => burst.remove(), 2200);
+  setTimeout(() => burst.remove(), 2400);
 }
 
 function renderSource() {
