@@ -88,6 +88,7 @@ const els = {
   deployBtn: document.getElementById('deploy-btn'),
   deploy5Btn: document.getElementById('deploy-5-btn'),
   copyAddressBtn: document.getElementById('copy-address-btn'),
+  openBasescanBtn: document.getElementById('open-basescan-btn'),
   clearHistoryBtn: document.getElementById('clear-history-btn'),
   fillSampleBtn: document.getElementById('fill-sample-btn'),
   resetBtn: document.getElementById('reset-btn'),
@@ -239,6 +240,13 @@ function renderTransactionState(txHash = '—', contractAddress = '—') {
   els.contractAddress.textContent = contractAddress;
   state.latestTxHash = txHash === '—' ? '' : txHash;
   state.latestAddress = contractAddress === '—' ? '' : contractAddress;
+  
+  // Show BaseScan button if contract deployed
+  if (state.latestAddress) {
+    els.openBasescanBtn.style.display = 'inline-flex';
+  } else {
+    els.openBasescanBtn.style.display = 'none';
+  }
 }
 
 function renderHistory() {
@@ -675,6 +683,11 @@ async function init() {
     } catch (error) {
       log('bad', error?.message || String(error));
     }
+  });
+
+  els.openBasescanBtn.addEventListener('click', () => {
+    if (!state.latestAddress) return;
+    openExplorer(`/address/${state.latestAddress}`);
   });
 
   els.clearHistoryBtn.addEventListener('click', () => {
