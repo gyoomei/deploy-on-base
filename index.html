@@ -2,16 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Deploy ERC20 on Base</title>
-    <meta
-      name="description"
-      content="Mini Farcaster app to deploy smart contracts on Base with a Remix-like workflow, but a much simpler form-first UI."
-    />
-    <meta name="theme-color" content="#0b1020" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Deploy on Base</title>
+    <meta name="description" content="A clean Farcaster Mini App for deploying ERC20 tokens on Base with one focused mobile-first flow." />
+    <meta name="theme-color" content="#07111f" />
+    <meta property="og:title" content="Deploy on Base" />
+    <meta property="og:description" content="Create and deploy an ERC20 token on Base from a clean Mini App interface." />
+    <meta property="og:image" content="https://gyoomei.github.io/deploy-on-base/assets/og.svg?v=9" />
     <meta
       name="fc:miniapp"
-      content='{"version":"1","imageUrl":"https://gyoomei.github.io/deploy-on-base/assets/og.svg","button":{"title":"Open Deploy on Base","action":{"type":"launch_frame","name":"Deploy on Base","url":"https://gyoomei.github.io/deploy-on-base/","splashImageUrl":"https://gyoomei.github.io/deploy-on-base/assets/icon.svg","splashBackgroundColor":"#0b1020"}}}'
+      content='{"version":"1","imageUrl":"https://gyoomei.github.io/deploy-on-base/assets/og.svg?v=9","button":{"title":"Deploy Token","action":{"type":"launch_frame","name":"Deploy on Base","url":"https://gyoomei.github.io/deploy-on-base/?v=9","splashImageUrl":"https://gyoomei.github.io/deploy-on-base/assets/icon.svg","splashBackgroundColor":"#07111f"}}}'
+    />
+    <meta
+      name="fc:frame"
+      content='{"version":"1","imageUrl":"https://gyoomei.github.io/deploy-on-base/assets/og.svg?v=9","button":{"title":"Deploy Token","action":{"type":"launch_frame","name":"Deploy on Base","url":"https://gyoomei.github.io/deploy-on-base/?v=9"}}}'
     />
     <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
     <link rel="preconnect" href="https://esm.sh" />
@@ -20,603 +24,342 @@
     <style>
       :root {
         color-scheme: dark;
-        --bg: #08111f;
-        --bg-2: #0d1728;
-        --panel: rgba(13, 23, 40, 0.92);
-        --panel-2: rgba(16, 29, 51, 0.95);
-        --line: rgba(148, 163, 184, 0.16);
-        --line-strong: rgba(79, 140, 255, 0.35);
-        --text: #e8eefc;
-        --muted: #93a4c7;
-        --accent: #4f8cff;
-        --accent-2: #79c0ff;
-        --success: #22c55e;
-        --warning: #f59e0b;
-        --danger: #fb7185;
-        --shadow: 0 20px 80px rgba(0, 0, 0, 0.35);
-        --radius: 20px;
-        --radius-sm: 14px;
-        --code: #d7e4ff;
-        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        --bg: #07111f;
+        --bg-soft: #0b1628;
+        --card: rgba(14, 25, 43, 0.82);
+        --card-strong: rgba(17, 31, 54, 0.94);
+        --line: rgba(148, 163, 184, 0.15);
+        --line-strong: rgba(77, 143, 255, 0.34);
+        --text: #f7fbff;
+        --muted: #8da0bf;
+        --muted-2: #64748b;
+        --blue: #0052ff;
+        --blue-2: #39a7ff;
+        --green: #2ee59d;
+        --amber: #fbbf24;
+        --red: #fb7185;
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+        --radius-xl: 30px;
+        --radius-lg: 22px;
+        --radius-md: 16px;
         --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
       }
-      * { box-sizing: border-box; }
-      html, body { height: 100%; }
-      
-      /* Smooth scrolling */
-      html { scroll-behavior: smooth; }
-      
+
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+      html { min-height: 100%; scroll-behavior: smooth; }
       body {
+        min-height: 100vh;
         margin: 0;
         font-family: var(--sans);
-        background:
-          radial-gradient(circle at top left, rgba(79, 140, 255, 0.18), transparent 28%),
-          radial-gradient(circle at top right, rgba(121, 192, 255, 0.12), transparent 22%),
-          linear-gradient(180deg, #09101d 0%, #07101b 100%);
         color: var(--text);
-        animation: fadeIn 0.6s ease-out;
+        background:
+          radial-gradient(circle at 50% -12%, rgba(0, 82, 255, 0.42), transparent 30%),
+          radial-gradient(circle at 100% 15%, rgba(57, 167, 255, 0.18), transparent 28%),
+          radial-gradient(circle at 0% 55%, rgba(46, 229, 157, 0.10), transparent 26%),
+          linear-gradient(180deg, #07111f 0%, #08101c 54%, #050a12 100%);
+        overflow-x: hidden;
       }
-      
-      @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(rgba(255,255,255,0.026) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.026) 1px, transparent 1px);
+        background-size: 32px 32px;
+        mask-image: linear-gradient(to bottom, #000 0%, transparent 76%);
       }
-      
-      @keyframes slideUp {
-        from { 
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to { 
-          opacity: 1;
-          transform: translateY(0);
-        }
+      body::after {
+        content: "";
+        position: fixed;
+        inset: auto -10% -25% -10%;
+        height: 45vh;
+        pointer-events: none;
+        background: radial-gradient(ellipse at center, rgba(0, 82, 255, 0.18), transparent 68%);
+        filter: blur(22px);
       }
-      
-      @keyframes scaleIn {
-        from { 
-          opacity: 0;
-          transform: scale(0.95);
-        }
-        to { 
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-      
-      @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-      }
-      
-      @keyframes shimmer {
-        0% { background-position: -1000px 0; }
-        100% { background-position: 1000px 0; }
-      }
+
       button, input, textarea, select { font: inherit; }
       button { cursor: pointer; }
-      .app {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
+      code, .inline-code { font-family: var(--mono); }
+
+      .app { min-height: 100vh; position: relative; z-index: 1; }
       .topbar {
         position: sticky;
         top: 0;
         z-index: 20;
-        backdrop-filter: blur(16px);
-        background: rgba(7, 14, 26, 0.72);
-        border-bottom: 1px solid rgba(148, 163, 184, 0.09);
-        animation: slideDown 0.5s ease-out;
-      }
-      
-      @keyframes slideDown {
-        from {
-          opacity: 0;
-          transform: translateY(-20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+        backdrop-filter: blur(22px);
+        background: linear-gradient(180deg, rgba(7,17,31,.88), rgba(7,17,31,.62));
+        border-bottom: 1px solid rgba(255,255,255,.07);
       }
       .topbar-inner {
+        width: min(520px, 100%);
+        margin: 0 auto;
+        padding: 12px 14px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 16px 18px;
-        max-width: 1600px;
-        margin: 0 auto;
+        gap: 10px;
       }
-      .brand { display: flex; align-items: center; gap: 14px; }
+      .brand { display: flex; align-items: center; gap: 11px; min-width: 0; flex: 1; }
       .logo {
-        width: 44px; height: 44px; border-radius: 14px;
-        background: linear-gradient(145deg, rgba(79, 140, 255, 0.95), rgba(121, 192, 255, 0.8));
-        box-shadow: 0 16px 32px rgba(79, 140, 255, 0.28);
-        display: grid; place-items: center;
-        font-weight: 900; color: white;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        animation: logoPulse 3s ease-in-out infinite;
+        width: 46px;
+        height: 46px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-weight: 950;
+        letter-spacing: -0.04em;
+        background: linear-gradient(145deg, #0052ff, #43b5ff);
+        box-shadow: 0 18px 44px rgba(0, 82, 255, 0.36), inset 0 1px rgba(255,255,255,.3);
       }
-      .logo:hover {
-        transform: scale(1.05);
-        box-shadow: 0 20px 40px rgba(79, 140, 255, 0.4);
-      }
-      
-      @keyframes logoPulse {
-        0%, 100% { 
-          box-shadow: 0 16px 32px rgba(79, 140, 255, 0.28);
-        }
-        50% { 
-          box-shadow: 0 16px 32px rgba(79, 140, 255, 0.45), 0 0 30px rgba(79, 140, 255, 0.3);
-        }
-      }
-      .brand h1 { margin: 0; font-size: 16px; line-height: 1.1; }
-      .brand p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
-      .top-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+      .brand h1 { margin: 0; font-size: 18px; line-height: 1; letter-spacing: -0.04em; }
+      .brand p { margin: 4px 0 0; color: var(--muted); font-size: 12px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .top-actions { display: flex; align-items: center; gap: 8px; }
       .pill {
+        min-height: 38px;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 10px 12px;
+        justify-content: center;
+        gap: 7px;
+        padding: 8px 10px;
+        border: 1px solid rgba(255,255,255,.08);
         border-radius: 999px;
-        border: 1px solid var(--line);
-        background: rgba(255,255,255,0.03);
+        background: rgba(255,255,255,.045);
         color: var(--text);
-        font-size: 13px;
+        font-size: 12px;
+        font-weight: 800;
         white-space: nowrap;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      .pill:hover { 
-        background: rgba(255,255,255,0.08); 
-        border-color: var(--line-strong);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      .pill strong { display: none; }
+      #network-pill { color: #dbeafe; }
+      #wallet-pill { max-width: 126px; overflow: hidden; text-overflow: ellipsis; }
+
+      .layout { width: min(520px, 100%); margin: 0 auto; padding: 14px 14px 96px; }
+      .hero-card {
+        position: relative;
+        overflow: hidden;
+        padding: 18px;
+        border-radius: var(--radius-xl);
+        border: 1px solid rgba(255,255,255,.10);
+        background:
+          linear-gradient(145deg, rgba(0,82,255,.28), rgba(17,31,54,.72) 48%, rgba(46,229,157,.10)),
+          rgba(255,255,255,.035);
+        box-shadow: var(--shadow), inset 0 1px rgba(255,255,255,.08);
+        animation: rise .42s ease both;
       }
-      
-      /* Toast notifications */
-      .toast {
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        z-index: 999;
-        background: var(--panel-2);
-        border: 1px solid var(--line-strong);
-        border-radius: var(--radius-sm);
-        padding: 14px 18px;
-        box-shadow: var(--shadow);
-        display: flex;
+      .hero-card::after {
+        content: "";
+        position: absolute;
+        width: 170px;
+        height: 170px;
+        border-radius: 50%;
+        right: -52px;
+        top: -42px;
+        background: radial-gradient(circle, rgba(67,181,255,.40), transparent 68%);
+      }
+      .eyebrow {
+        display: inline-flex;
         align-items: center;
-        gap: 12px;
-        min-width: 280px;
-        max-width: 420px;
-        animation: slideIn 0.3s ease;
-        backdrop-filter: blur(12px);
+        gap: 7px;
+        color: #b7d4ff;
+        text-transform: uppercase;
+        letter-spacing: .14em;
+        font-size: 11px;
+        font-weight: 950;
       }
-      @keyframes slideIn {
-        from { transform: translateX(120%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+      .hero-card h2 { position: relative; z-index: 1; margin: 11px 0 8px; font-size: clamp(32px, 9vw, 50px); line-height: .9; letter-spacing: -0.075em; }
+      .hero-card p { position: relative; z-index: 1; margin: 0; color: #c5d2e8; font-size: 14px; line-height: 1.5; max-width: 360px; }
+      .hero-metrics { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
+      .metric { padding: 10px; border-radius: 18px; background: rgba(2, 8, 23, .28); border: 1px solid rgba(255,255,255,.07); }
+      .metric b { display: block; font-size: 14px; line-height: 1; }
+      .metric span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+
+      .grid { display: grid; gap: 12px; margin-top: 12px; }
+      .panel {
+        border: 1px solid rgba(255,255,255,.09);
+        border-radius: var(--radius-xl);
+        background: var(--card);
+        box-shadow: 0 18px 58px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.05);
+        backdrop-filter: blur(20px);
+        overflow: hidden;
+        animation: rise .45s ease both;
       }
-      @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(120%); opacity: 0; }
+      .panel:nth-child(2) { animation-delay: .04s; }
+      .panel:nth-child(3) { animation-delay: .08s; }
+      @keyframes rise { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
+      .panel-header { padding: 16px 16px 8px; }
+      .panel-header h2, .panel-header h3, .deploy-top h3, .wallet-top h3 { margin: 0; font-size: 17px; letter-spacing: -0.035em; }
+      .panel-header p { margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+      .panel-body { padding: 12px 16px 16px; }
+      .stack { display: grid; gap: 12px; }
+      .chip {
+        width: max-content;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        color: #cfe5ff;
+        background: rgba(0,82,255,.15);
+        border: 1px solid rgba(67,181,255,.22);
+        font-size: 12px;
+        font-weight: 850;
       }
-      .toast.hiding { animation: slideOut 0.3s ease forwards; }
-      .toast-icon { font-size: 20px; flex-shrink: 0; }
-      .toast-content { flex: 1; font-size: 14px; line-height: 1.4; }
-      .toast.success { border-color: var(--success); }
-      .toast.success .toast-icon { color: var(--success); }
-      .toast.error { border-color: var(--danger); }
-      .toast.error .toast-icon { color: var(--danger); }
-      .toast.info { border-color: var(--accent); }
-      .toast.info .toast-icon { color: var(--accent); }
-      .pill strong { font-weight: 700; }
-      .btn {
-        border: 1px solid var(--line);
-        background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      .chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 16px rgba(46,229,157,.9); }
+      .field { display: grid; gap: 7px; }
+      label { display: flex; justify-content: space-between; gap: 10px; color: #d9e7ff; font-size: 13px; font-weight: 850; }
+      .mini { color: var(--muted-2); font-size: 11px; font-weight: 850; text-transform: uppercase; letter-spacing: .08em; }
+      input, select, textarea.code {
+        width: 100%;
+        border: 1px solid rgba(255,255,255,.09);
+        border-radius: 18px;
+        background: rgba(2, 8, 23, .34);
         color: var(--text);
-        border-radius: 14px;
-        padding: 12px 14px;
+        outline: none;
+        transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+      }
+      input, select { height: 54px; padding: 0 14px; font-size: 16px; font-weight: 720; }
+      select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, #93c5fd 50%), linear-gradient(135deg, #93c5fd 50%, transparent 50%); background-position: calc(100% - 19px) 23px, calc(100% - 13px) 23px; background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; }
+      input:focus, select:focus, textarea.code:focus { border-color: rgba(67,181,255,.58); box-shadow: 0 0 0 4px rgba(0,82,255,.14); background: rgba(2,8,23,.48); }
+      .hint { color: var(--muted); font-size: 12px; line-height: 1.45; }
+      .split { display: flex; gap: 8px; flex-wrap: wrap; }
+      .split > * { flex: 1; }
+
+      .btn {
+        min-height: 48px;
+        border: 0;
+        border-radius: 17px;
+        padding: 0 15px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
-                    border-color 0.2s ease, 
-                    background 0.2s ease, 
-                    opacity 0.2s ease,
-                    box-shadow 0.2s ease;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        position: relative;
+        color: var(--text);
+        font-weight: 900;
+        font-size: 14px;
+        text-decoration: none;
+        transition: transform .16s ease, opacity .16s ease, background .16s ease, border-color .16s ease;
       }
-      .btn:hover:not(:disabled) { 
-        transform: translateY(-2px); 
-        border-color: rgba(79,140,255,0.6);
-        box-shadow: 0 12px 28px rgba(0,0,0,0.18), 0 0 20px rgba(79,140,255,0.15);
-      }
-      .btn:active:not(:disabled) {
-        transform: translateY(0);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      }
-      .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
-      .btn.loading { pointer-events: none; opacity: 0.7; }
-      .btn.loading::after {
-        content: '';
-        position: absolute;
-        width: 14px;
-        height: 14px;
-        border: 2px solid transparent;
-        border-top-color: currentColor;
-        border-radius: 50%;
-        animation: spin 0.6s linear infinite;
-      }
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-      
-      /* Shimmer effect for loading states */
-      .shimmer {
-        background: linear-gradient(
-          90deg,
-          rgba(255,255,255,0.03) 0%,
-          rgba(255,255,255,0.08) 50%,
-          rgba(255,255,255,0.03) 100%
-        );
-        background-size: 200% 100%;
-        animation: shimmer 2s ease-in-out infinite;
-      }
-      .btn.primary {
-        background: linear-gradient(180deg, rgba(79,140,255,1), rgba(54,118,255,0.9));
-        border-color: rgba(79,140,255,0.8);
-        color: white;
-        box-shadow: 0 8px 24px rgba(79,140,255,0.35), 0 0 20px rgba(79,140,255,0.2);
-      }
-      .btn.primary:hover:not(:disabled) {
-        box-shadow: 0 12px 32px rgba(79,140,255,0.45), 0 0 40px rgba(79,140,255,0.3);
-        border-color: rgba(79,140,255,1);
-      }
-      .btn.primary:active:not(:disabled) {
-        box-shadow: 0 6px 20px rgba(79,140,255,0.4), 0 0 24px rgba(79,140,255,0.25);
-      }
-      .btn.ghost { background: rgba(255,255,255,0.03); }
-      .btn.small { padding: 9px 12px; border-radius: 12px; font-size: 13px; }
-      .layout {
-        max-width: 1600px;
-        width: 100%;
-        margin: 0 auto;
-        padding: 16px;
-        flex: 1;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: 340px minmax(0, 1fr);
-        gap: 12px;
-        min-height: calc(100vh - 106px);
-      }
-      .panel {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
+      .btn:active { transform: scale(.98); }
+      .btn.primary { background: linear-gradient(135deg, #0052ff, #43b5ff); box-shadow: 0 15px 34px rgba(0,82,255,.28); color: white; }
+      .btn.ghost { background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.09); box-shadow: none; color: #dbeafe; }
+      .btn.small { min-height: 38px; border-radius: 14px; padding: 0 12px; font-size: 12px; }
+      .btn:disabled { opacity: .55; cursor: not-allowed; }
+      .btn.loading::after { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.32); border-top-color: white; animation: spin .8s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .console { display: grid; gap: 12px; }
+      .wallet-card, .deploy-card, .history-card, .code-shell {
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: var(--radius-lg);
+        background: rgba(255,255,255,.035);
         overflow: hidden;
-        min-width: 0;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                    box-shadow 0.3s ease,
-                    border-color 0.3s ease;
-        animation: slideUp 0.5s ease-out;
       }
-      .panel:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 24px 96px rgba(0, 0, 0, 0.45), 0 0 40px rgba(79, 140, 255, 0.08);
-        border-color: rgba(79, 140, 255, 0.25);
-      }
-      .panel-header {
-        padding: 14px 14px 12px;
-        border-bottom: 1px solid rgba(148,163,184,0.12);
-        background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
-      }
-      .panel-header h2 { margin: 0; font-size: 15px; }
-      .panel-header p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
-      .panel-body { padding: 14px; }
-      .stack { display: flex; flex-direction: column; gap: 12px; }
-      .field label { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; font-size: 13px; color: #c9d6f3; }
-      .field input, .field textarea, .field select {
-        width: 100%;
-        border-radius: 14px;
-        border: 1px solid var(--line);
-        background: rgba(255,255,255,0.03);
-        color: var(--text);
-        padding: 13px 14px;
-        outline: none;
-        transition: border-color 0.2s ease, 
-                    box-shadow 0.2s ease, 
-                    background 0.2s ease,
-                    transform 0.2s ease;
-      }
-      .field input:focus, .field textarea:focus, .field select:focus {
-        border-color: rgba(79,140,255,0.6);
-        background: rgba(255,255,255,0.05);
-        box-shadow: 0 0 0 3px rgba(79,140,255,0.12), 0 8px 24px rgba(0,0,0,0.15);
-        transform: translateY(-1px);
-      }
-      .field textarea { min-height: 120px; resize: vertical; }
-      .hint {
-        margin-top: 8px;
-        font-size: 12px;
-        color: var(--muted);
-        line-height: 1.45;
-      }
-      .quick-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-      }
-      .quick {
-        padding: 12px;
-        border-radius: 14px;
-        border: 1px solid var(--line);
-        background: rgba(255,255,255,0.03);
-        color: var(--text);
-        text-align: left;
-      }
-      .quick strong { display: block; font-size: 13px; margin-bottom: 4px; }
-      .quick span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
-      .editor-panel {
-        display: none;
-      }
-      .editor-wrap {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      }
-      .editor-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-      .status-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .wallet-card { padding: 14px; }
+      .wallet-top, .deploy-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
       .status {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 8px 10px;
+        gap: 6px;
+        padding: 7px 9px;
         border-radius: 999px;
-        border: 1px solid var(--line);
-        background: rgba(255,255,255,0.03);
-        font-size: 12px;
-        color: var(--muted);
-        transition: all 0.3s ease;
+        color: #cbd5e1;
+        background: rgba(148,163,184,.10);
+        border: 1px solid rgba(148,163,184,.14);
+        font-size: 11px;
+        font-weight: 900;
       }
-      .status.good { color: #bdf7cf; border-color: rgba(34,197,94,0.28); background: rgba(34,197,94,0.08); }
-      .status.warn { color: #ffd58a; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
-      .code-shell {
-        margin-top: 14px;
-        border-radius: 18px;
-        border: 1px solid var(--line);
-        background: #050915;
-        overflow: hidden;
-        flex: 1;
-        min-height: 0;
-      }
-      .code-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 14px;
-        border-bottom: 1px solid rgba(148,163,184,0.12);
-        background: rgba(255,255,255,0.03);
-      }
-      .code-head strong { font-size: 13px; }
-      .code-head span { font-size: 12px; color: var(--muted); }
-      textarea.code {
-        display: block;
-        width: 100%;
-        height: calc(100% - 49px);
-        min-height: 520px;
-        background: transparent;
-        color: var(--code);
-        border: 0;
-        resize: none;
-        outline: none;
-        padding: 16px;
-        font-family: var(--mono);
-        font-size: 12.5px;
-        line-height: 1.6;
-        white-space: pre;
-      }
-      .console {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      .wallet-card, .deploy-card, .history-card {
-        border: 1px solid var(--line);
-        background: rgba(255,255,255,0.03);
-        border-radius: 18px;
-        padding: 12px;
-      }
-      .wallet-top, .deploy-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 10px;
-      }
-      .wallet-top h3, .deploy-top h3, .history-card h3 { margin: 0; font-size: 14px; }
-      .mini { font-size: 12px; color: var(--muted); }
-      .kv { display: grid; grid-template-columns: 1fr; gap: 10px; }
-      .kv-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        align-items: center;
-        padding: 10px 12px;
-        border-radius: 14px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(148,163,184,0.08);
-      }
-      .kv-row span:first-child { color: var(--muted); font-size: 12px; }
-      .kv-row code, .inline-code {
-        font-family: var(--mono);
-        font-size: 12px;
-        color: #d5e1ff;
-        word-break: break-all;
-      }
-      .deploy-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-      .deploy-actions .btn { width: 100%; }
+      .status.good { color: #bbf7d0; background: rgba(34,197,94,.13); border-color: rgba(34,197,94,.22); }
+      .status.warn { color: #fde68a; background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.22); }
+      .kv { display: grid; gap: 8px; }
+      .kv-row { display: grid; grid-template-columns: 80px 1fr; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid rgba(255,255,255,.06); }
+      .kv-row:first-child { border-top: 0; }
+      .kv-row span { color: var(--muted); font-size: 12px; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; }
+      .kv-row code { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #e8f1ff; font-size: 12px; }
+      .deploy-actions { position: sticky; bottom: 10px; z-index: 4; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; padding-top: 4px; }
+      #deploy-btn { grid-column: 1 / -1; min-height: 56px; font-size: 16px; }
+
+      .deploy-card, .history-card { padding: 14px; }
       .log {
-        margin-top: 10px;
-        border-radius: 16px;
-        border: 1px solid rgba(148,163,184,0.12);
-        background: #050915;
-        padding: 12px;
-        min-height: 150px;
-        max-height: 250px;
+        min-height: 98px;
+        max-height: 160px;
         overflow: auto;
-        font-family: var(--mono);
-        font-size: 12px;
-        line-height: 1.55;
-      }
-      .log-line { margin: 0 0 6px; white-space: pre-wrap; word-break: break-word; }
-      .log-line.info { color: #cdd8f3; }
-      .log-line.good { color: #aef1c0; }
-      .log-line.warn { color: #ffd58a; }
-      .log-line.bad { color: #ff95a8; }
-      .history-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-      .history-item {
+        border-radius: 18px;
         padding: 10px;
-        border-radius: 16px;
-        border: 1px solid rgba(148,163,184,0.1);
-        background: rgba(255,255,255,0.03);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                    box-shadow 0.3s ease,
-                    border-color 0.3s ease,
-                    background 0.3s ease;
-        animation: slideUp 0.4s ease-out;
+        background: rgba(2,8,23,.42);
+        border: 1px solid rgba(255,255,255,.06);
       }
-      .history-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 0 20px rgba(79, 140, 255, 0.08);
-        border-color: rgba(79, 140, 255, 0.3);
-        background: rgba(255,255,255,0.05);
-      }
+      .log-line { color: #a8bad6; font-family: var(--mono); font-size: 11px; line-height: 1.55; padding: 3px 0; overflow-wrap: anywhere; }
+      .log-line.good { color: #86efac; }
+      .log-line.warn { color: #fde68a; }
+      .log-line.bad { color: #fda4af; }
+      .history-list { display: grid; gap: 9px; max-height: 290px; overflow: auto; }
+      .history-item { padding: 12px; border-radius: 18px; border: 1px solid rgba(255,255,255,.07); background: rgba(2,8,23,.26); }
       .history-item .title { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
       .history-item strong { font-size: 13px; }
-      .history-item .meta { margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+      .history-item .meta { margin-top: 7px; color: var(--muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
       .history-item .actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
-      .empty {
-        color: var(--muted);
-        font-size: 13px;
-        line-height: 1.55;
-        padding: 12px;
-        border: 1px dashed rgba(148,163,184,0.18);
-        border-radius: 16px;
-        background: rgba(255,255,255,0.02);
-      }
-      .split { display: flex; gap: 10px; flex-wrap: wrap; }
-      .split > * { flex: 1 1 160px; }
-      .chip {
-        display: inline-flex;
+      .empty { color: var(--muted); font-size: 13px; line-height: 1.55; padding: 14px; border: 1px dashed rgba(148,163,184,.18); border-radius: 18px; background: rgba(2,8,23,.22); text-align: center; }
+
+      .editor-panel { margin-bottom: 12px; }
+      .editor-toolbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+      .status-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+      .editor-wrap { padding-top: 8px; }
+      .code-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px; border-bottom: 1px solid rgba(255,255,255,.07); }
+      .code-head strong { display: block; font-size: 12px; }
+      .code-head span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; font-family: var(--mono); }
+      textarea.code { min-height: 300px; resize: vertical; border: 0; border-radius: 0; padding: 14px; font-family: var(--mono); font-size: 11.5px; line-height: 1.55; color: #dce9ff; }
+      details.panel summary { list-style: none; cursor: pointer; }
+      details.panel summary::-webkit-details-marker { display: none; }
+      details.panel .panel-header { display: flex; align-items: center; justify-content: space-between; }
+      details.panel .panel-header::after { content: "⌄"; color: var(--muted); font-weight: 900; transition: transform .18s ease; }
+      details.panel[open] .panel-header::after { transform: rotate(180deg); }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        z-index: 999;
+        transform: translateX(-50%);
+        width: min(440px, calc(100vw - 28px));
+        display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 8px 10px;
-        border-radius: 999px;
-        background: rgba(79,140,255,0.12);
-        color: #dcebff;
-        border: 1px solid rgba(79,140,255,0.25);
-        font-size: 12px;
-      }
-      .skeleton {
-        display: grid;
         gap: 10px;
+        padding: 12px 14px;
+        border-radius: 18px;
+        border: 1px solid rgba(67,181,255,.25);
+        background: rgba(10, 20, 35, .94);
+        box-shadow: 0 18px 52px rgba(0,0,0,.42);
+        backdrop-filter: blur(16px);
+        animation: toastIn .22s ease both;
       }
-      .skeleton div {
-        height: 12px; border-radius: 999px;
-        background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      .toast.hiding { animation: toastOut .22s ease both; }
+      .toast-icon { width: 28px; height: 28px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 10px; background: rgba(0,82,255,.18); color: #bfdbfe; font-weight: 950; }
+      .toast-content { min-width: 0; color: #e5efff; font-size: 13px; font-weight: 750; }
+      @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translate(-50%, 0); } }
+      @keyframes toastOut { to { opacity: 0; transform: translate(-50%, 16px); } }
+
+      .hidden-control { display: none !important; }
+      @media (min-width: 860px) {
+        .topbar-inner, .layout { width: min(760px, 100%); }
+        .grid { grid-template-columns: 1fr 1fr; align-items: start; }
+        .panel:first-child { grid-column: 1; }
+        .console-panel { grid-column: 2; grid-row: 1 / span 2; }
+        .editor-panel { grid-column: 1 / -1; }
       }
-      .skeleton div:nth-child(2) { width: 70%; }
-      .skeleton div:nth-child(3) { width: 45%; }
-      @media (max-width: 1280px) {
-        .grid { grid-template-columns: 320px 1fr; }
-        .panel.console-panel { grid-column: 1 / -1; }
-      }
-      @media (max-width: 900px) {
-        .topbar-inner { flex-direction: column; align-items: stretch; }
-        .top-actions { justify-content: flex-start; }
-        .layout { padding: 12px; }
-        .grid { grid-template-columns: 1fr; }
-        textarea.code { min-height: 420px; }
+      @media (max-width: 430px) {
+        .topbar-inner { padding: 10px; }
+        .layout { padding: 10px 10px 92px; }
+        .hero-card { padding: 16px; border-radius: 26px; }
+        .hero-card h2 { font-size: 34px; }
+        .hero-metrics { grid-template-columns: 1fr; }
+        .panel { border-radius: 26px; }
         .deploy-actions { grid-template-columns: 1fr; }
-      }
-      /* Mobile responsive */
-      @media (max-width: 768px) {
-        .container {
-          padding: 1rem;
-        }
-
-        .top-actions {
-          flex-direction: column;
-          gap: 0.75rem;
-          align-items: stretch;
-        }
-
-        .pill {
-          justify-content: space-between;
-        }
-
-        .btn {
-          width: 100%;
-          padding: 0.875rem 1rem;
-          font-size: 1rem;
-        }
-
-        .deploy-actions {
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-
-        .deploy-actions .btn {
-          width: 100%;
-        }
-
-        .form-row {
-          flex-direction: column;
-        }
-
-        .form-row .form-group {
-          width: 100%;
-        }
-
-        .history-item {
-          padding: 0.875rem;
-        }
-
-        .history-meta {
-          flex-direction: column;
-          gap: 0.5rem;
-          align-items: flex-start;
-        }
-
-        .history-actions {
-          width: 100%;
-          justify-content: flex-start;
-        }
-      }
-
-      /* Toast positioning on mobile */
-      @media (max-width: 768px) {
-        #toast-container {
-          bottom: 1rem;
-          left: 1rem;
-          right: 1rem;
-        }
-
-        .toast {
-          width: 100%;
-        }
+        #deploy-btn { min-height: 54px; }
+        .pill:first-child { display: none; }
       }
     </style>
   </head>
@@ -628,116 +371,87 @@
             <div class="logo">B</div>
             <div>
               <h1>Deploy on Base</h1>
-              <p>Minimal token deploy app.</p>
+              <p>Mini App token deployer</p>
             </div>
           </div>
           <div class="top-actions">
-            <div class="pill"><strong>Network</strong> <span id="network-pill">Base Mainnet</span></div>
-            <div class="pill"><strong>Wallet</strong> <span id="wallet-pill">Not connected</span></div>
-                        <button id="connect-btn" class="btn primary">Connect Wallet</button>
+            <div class="pill"><strong>Network</strong><span id="network-pill">Base Mainnet</span></div>
+            <div class="pill"><strong>Wallet</strong><span id="wallet-pill">Not connected</span></div>
+            <button id="connect-btn" class="btn primary">Connect</button>
           </div>
         </div>
       </header>
 
       <main class="layout">
+        <section class="hero-card" aria-labelledby="hero-title">
+          <span class="eyebrow">Base Mainnet · ERC20</span>
+          <h2 id="hero-title">Deploy a token in one clean flow.</h2>
+          <p>Fill token details, connect your Farcaster wallet, and deploy directly on Base without leaving the Mini App.</p>
+          <div class="hero-metrics" aria-label="App highlights">
+            <div class="metric"><b>1-screen</b><span>Simple UX</span></div>
+            <div class="metric"><b>ERC20</b><span>Template</span></div>
+            <div class="metric"><b>Base</b><span>Ready</span></div>
+          </div>
+        </section>
+
         <div class="grid">
           <aside class="panel">
             <div class="panel-header">
-              <h2>Token details</h2>
-              <p>Enter the core token details. The rest is handled automatically.</p>
+              <h2>Token setup</h2>
+              <p>Only the fields needed to launch. Advanced source is tucked below.</p>
             </div>
             <div class="panel-body stack">
-              <div class="chip">Base deploy ready</div>
+              <div class="chip">Deploy ready</div>
+              <select id="template-select" class="hidden-control" aria-hidden="true"><option value="erc20" selected>ERC20 Token</option></select>
               <div class="field">
                 <label for="token-name"><span>Token name</span><span class="mini">Required</span></label>
-                <input id="token-name" type="text" placeholder="Base Token" value="Base Token" />
+                <input id="token-name" type="text" placeholder="Base Token" value="Base Token" autocomplete="off" />
               </div>
               <div class="field">
-                <label for="token-symbol"><span>Token symbol</span><span class="mini">Required</span></label>
-                <input id="token-symbol" type="text" maxlength="8" placeholder="BASE" value="BASE" />
+                <label for="token-symbol"><span>Token symbol</span><span class="mini">Ticker</span></label>
+                <input id="token-symbol" type="text" maxlength="8" placeholder="BASE" value="BASE" autocomplete="off" />
               </div>
               <div class="field">
-                <label for="initial-supply"><span>Initial supply</span><span class="mini">uint256</span></label>
-                <input id="initial-supply" type="number" min="1" step="1" placeholder="1000000" value="1000000" />
-                <div class="hint">Supply is entered as a whole number. The contract converts it to 18 decimals.</div>
-              </div>
-              <div class="split">
-                <button id="fill-sample-btn" class="btn ghost small" style="display:none;">Fill sample</button>
-                <button id="reset-btn" class="btn ghost small" style="display:none;">Reset</button>
+                <label for="initial-supply"><span>Initial supply</span><span class="mini">18 decimals</span></label>
+                <input id="initial-supply" type="number" min="1" step="1" inputmode="numeric" placeholder="1000000" value="1000000" />
+                <div class="hint">Enter a whole number. The contract mints supply using 18 decimals.</div>
               </div>
               <div class="field">
-                <label for="chain-select"><span>Target chain</span><span class="mini">Suggested</span></label>
+                <label for="chain-select"><span>Target chain</span><span class="mini">Choose</span></label>
                 <select id="chain-select">
                   <option value="base" selected>Base Mainnet (8453)</option>
                   <option value="base-sepolia">Base Sepolia (84532)</option>
                 </select>
               </div>
+              <div class="split hidden-control" aria-hidden="true">
+                <button id="fill-sample-btn" class="btn ghost small">Fill sample</button>
+                <button id="reset-btn" class="btn ghost small">Reset</button>
+              </div>
             </div>
           </aside>
-
-          <section class="panel editor-panel">
-            <div class="panel-header">
-              <div class="editor-toolbar">
-                <div>
-                  <h2>Remix-style contract engine</h2>
-                  <p>Source contract, compile status, dan deploy flow.</p>
-                </div>
-                <div class="status-row">
-                  <span id="compile-status" class="status warn">Waiting for contract template</span>
-                  <span id="artifact-status" class="status">Loading artifact...</span>
-                </div>
-              </div>
-            </div>
-            <div class="panel-body editor-wrap">
-              <div class="code-shell">
-                <div class="code-head">
-                  <div>
-                    <strong>contracts/ERC20Token.sol</strong>
-                    <span id="source-meta">generated preview</span>
-                  </div>
-                  <div class="split" style="flex:0 0 auto;">
-                    <button id="compile-btn" class="btn small" style="display:none;">Compile</button>
-                  </div>
-                </div>
-                <textarea id="source-preview" class="code" readonly spellcheck="false">Loading source...</textarea>
-              </div>
-            </div>
-          </section>
 
           <section class="panel console-panel">
             <div class="panel-header">
               <h2>Deploy console</h2>
-              <p>Wallet status, transaction hash, contract address, and history.</p>
+              <p>Wallet, transaction, contract address, and local deployment history.</p>
             </div>
             <div class="panel-body console">
               <div class="wallet-card">
                 <div class="wallet-top">
-                  <h3>Token deploy</h3>
+                  <h3>Launch status</h3>
                   <span id="connection-state" class="status">Disconnected</span>
                 </div>
                 <div class="kv">
-                  <div class="kv-row">
-                    <span>Address</span>
-                    <code id="wallet-address">—</code>
-                  </div>
-                  <div class="kv-row">
-                    <span>Chain</span>
-                    <code id="wallet-chain">Base Mainnet</code>
-                  </div>
-                  <div class="kv-row">
-                    <span>Tx hash</span>
-                    <code id="tx-hash">—</code>
-                  </div>
-                  <div class="kv-row">
-                    <span>Contract</span>
-                    <code id="contract-address">—</code>
-                  </div>
+                  <div class="kv-row"><span>Address</span><code id="wallet-address">—</code></div>
+                  <div class="kv-row"><span>Chain</span><code id="wallet-chain">Base Mainnet</code></div>
+                  <div class="kv-row"><span>Tx hash</span><code id="tx-hash">—</code></div>
+                  <div class="kv-row"><span>Contract</span><code id="contract-address">—</code></div>
                 </div>
                 <div class="deploy-actions">
-                  <button id="deploy-btn" class="btn primary">Deploy Contract</button>
-                  <button id="deploy-5-btn" class="btn ghost" style="display:none;">Deploy x5</button>
+                  <button id="deploy-btn" class="btn primary">Deploy Token</button>
+                  <button id="deploy-5-btn" class="btn ghost hidden-control" aria-hidden="true">Deploy x5</button>
                   <button id="copy-address-btn" class="btn ghost">Copy address</button>
-                  <button id="open-basescan-btn" class="btn ghost" style="display: none;">Open BaseScan</button>
+                  <button id="open-basescan-btn" class="btn ghost" style="display:none;">Open BaseScan</button>
                 </div>
               </div>
 
@@ -753,7 +467,7 @@
 
               <div class="history-card">
                 <div class="deploy-top">
-                  <h3>Deployment history</h3>
+                  <h3>Recent deploys</h3>
                   <button id="clear-history-btn" class="btn small ghost">Clear</button>
                 </div>
                 <div id="history-list" class="history-list">
@@ -762,10 +476,37 @@
               </div>
             </div>
           </section>
+
+          <details class="panel editor-panel">
+            <summary class="panel-header">
+              <div>
+                <h2>Advanced contract engine</h2>
+                <p>Generated Solidity preview, artifact status, and compile controls.</p>
+              </div>
+            </summary>
+            <div class="panel-body editor-wrap">
+              <div class="editor-toolbar" style="margin-bottom:10px;">
+                <div class="status-row">
+                  <span id="compile-status" class="status warn">Waiting for contract template</span>
+                  <span id="artifact-status" class="status">Loading artifact...</span>
+                </div>
+              </div>
+              <div class="code-shell">
+                <div class="code-head">
+                  <div>
+                    <strong>contracts/ERC20Token.sol</strong>
+                    <span id="source-meta">generated preview</span>
+                  </div>
+                  <button id="compile-btn" class="btn small ghost">Refresh</button>
+                </div>
+                <textarea id="source-preview" class="code" readonly spellcheck="false">Loading source...</textarea>
+              </div>
+            </div>
+          </details>
         </div>
       </main>
     </div>
 
-    <script type="module" src="./app.js?v=8"></script>
+    <script type="module" src="./app.js?v=9"></script>
   </body>
 </html>
