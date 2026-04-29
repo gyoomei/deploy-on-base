@@ -637,8 +637,7 @@
           <div class="top-actions">
             <div class="pill"><strong>Network</strong> <span id="network-pill">Base Mainnet</span></div>
             <div class="pill"><strong>Wallet</strong> <span id="wallet-pill">Not connected</span></div>
-            <div id="farcaster-pill" class="pill" style="display: none;"><strong>👤</strong> <span id="farcaster-username">—</span></div>
-            <button id="connect-btn" class="btn primary">Connect Wallet</button>
+                        <button id="connect-btn" class="btn primary">Connect Wallet</button>
           </div>
         </div>
       </header>
@@ -666,8 +665,8 @@
                 <div class="hint">Supply dihitung langsung sebagai angka bulat. Contract akan mengalikan ke 18 decimals.</div>
               </div>
               <div class="split">
-                <button id="fill-sample-btn" class="btn ghost small">Fill sample</button>
-                <button id="reset-btn" class="btn ghost small">Reset</button>
+                <button id="fill-sample-btn" class="btn ghost small" style="display:none;">Fill sample</button>
+                <button id="reset-btn" class="btn ghost small" style="display:none;">Reset</button>
               </div>
               <div class="field">
                 <label for="chain-select"><span>Target chain</span><span class="mini">Quest recommended</span></label>
@@ -703,7 +702,7 @@
                     <span id="source-meta">generated preview</span>
                   </div>
                   <div class="split" style="flex:0 0 auto;">
-                    <button id="compile-btn" class="btn small">Compile</button>
+                    <button id="compile-btn" class="btn small" style="display:none;">Compile</button>
                     <button id="deploy-btn" class="btn primary small">Deploy Contract</button>
                   </div>
                 </div>
@@ -742,7 +741,7 @@
                   </div>
                 </div>
                 <div class="deploy-actions">
-                  <button id="deploy-5-btn" class="btn ghost">Deploy x5</button>
+                  <button id="deploy-5-btn" class="btn ghost" style="display:none;">Deploy x5</button>
                   <button id="copy-address-btn" class="btn ghost">Copy address</button>
                   <button id="open-basescan-btn" class="btn ghost" style="display: none;">Open BaseScan</button>
                 </div>
@@ -773,6 +772,6 @@
       </main>
     </div>
 
-    <script type="module" src="./app.js?v=3"></script>
+    <script type="module" src="./app.js?v=4"></script>
   </body>
 </html>
