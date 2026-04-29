@@ -63,8 +63,6 @@ const els = {
   connectBtn: document.getElementById('connect-btn'),
   networkPill: document.getElementById('network-pill'),
   walletPill: document.getElementById('wallet-pill'),
-  farcasterPill: document.getElementById('farcaster-pill'),
-  farcasterUsername: document.getElementById('farcaster-username'),
   connectionState: document.getElementById('connection-state'),
   walletAddress: document.getElementById('wallet-address'),
   walletChain: document.getElementById('wallet-chain'),
@@ -214,11 +212,13 @@ function renderWallet() {
     els.walletAddress.textContent = state.address;
     els.connectionState.textContent = 'Connected';
     els.connectionState.classList.add('good');
+    els.connectBtn.textContent = 'Connected';
   } else {
     els.walletPill.textContent = 'Not connected';
     els.walletAddress.textContent = '—';
     els.connectionState.textContent = 'Disconnected';
     els.connectionState.classList.remove('good');
+    els.connectBtn.textContent = 'Connect Wallet';
   }
   const chain = activeChain();
   els.networkPill.textContent = chain.label;
@@ -363,6 +363,18 @@ async function connectWallet() {
   }
 }
 
+async function autoConnectWallet() {
+  if (state.address || state.isAutoConnecting) return;
+  state.isAutoConnecting = true;
+  try {
+    await connectWallet();
+  } catch (error) {
+    console.warn('Auto-connect skipped:', error);
+  } finally {
+    state.isAutoConnecting = false;
+  }
+}
+
 function currentExplorerBase() {
   return activeChain().blockExplorerUrls[0];
 }
@@ -426,7 +438,13 @@ async function deployOnce() {
     log('info', 'Waiting for confirmation via public RPC...');
 
     const rpc = new ethers.JsonRpcProvider(activeChain().rpcUrls[0], activeChain().chainId);
-    const receipt = await waitForReceipt(rpc, tx.hash);
+    let receipt = null;
+    try {
+      receipt = await waitForReceipt(rpc, tx.hash, 120000, 2500);
+    } catch (pollError) {
+      console.warn('Public RPC receipt polling failed, falling back to tx.wait()', pollError);
+      receipt = await tx.wait();
+    }
     if (!receipt || receipt.status !== 1) {
       throw new Error(`Transaction failed or reverted: ${tx.hash}`);
     }
@@ -454,7 +472,7 @@ async function deployOnce() {
     return true;
   } catch (error) {
     console.error(error);
-    const msg = error?.shortMessage || error?.message || error?.cause?.message || String(error);
+    const msg = error?.shortMessage || error?.message || error?.cause?.message || error?.reason?.message || String(error);
     log('bad', msg);
     setStatus(els.compileStatus, 'warn', 'Deployment failed');
     showToast(msg, 'error');
@@ -602,28 +620,7 @@ function wireHistoryActions() {
   });
 }
 
-async function loadFarcasterContext() {
-  try {
-    const context = await sdk.context;
-    if (context?.user) {
-      state.farcasterUser = {
-        fid: context.user.fid,
-        username: context.user.username,
-        displayName: context.user.displayName,
-        pfpUrl: context.user.pfpUrl,
-      };
-      
-      // Show Farcaster user pill
-      els.farcasterUsername.textContent = `@${context.user.username}`;
-      els.farcasterPill.style.display = 'inline-flex';
-      
-      log('info', `Farcaster user: @${context.user.username} (fid: ${context.user.fid})`);
-      showToast(`Welcome @${context.user.username}!`, 'info');
-    }
-  } catch (error) {
-    console.warn('Farcaster context unavailable (fine outside Farcaster):', error);
-  }
-}
+async function loadFarcasterContext() { return; }
 
 async function init() {
   try {
@@ -632,9 +629,8 @@ async function init() {
     console.warn('sdk.actions.ready() failed (fine outside Farcaster):', error);
   }
 
-  // Load Farcaster user context
-  await loadFarcasterContext();
-
+  renderWallet();
+  await autoConnectWallet();
   renderWallet();
   renderHistory();
   wireHistoryActions();
