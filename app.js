@@ -19,8 +19,8 @@ const TEMPLATES = {
 };
 
 const DEFAULTS = {
-  tokenName: 'Base Quest Token',
-  tokenSymbol: 'BQT',
+  tokenName: 'Base Token',
+  tokenSymbol: 'BASE',
   initialSupply: '1000000',
 };
 
@@ -203,7 +203,7 @@ function renderSource() {
   els.sourcePreview.value = generatePreviewSource(draft);
   state.compiledHash = window.ethers.id(els.sourcePreview.value);
   els.sourceMeta.textContent = `template hash ${shortHash(state.compiledHash)}`;
-  setStatus(els.compileStatus, 'good', 'Compile ready ✓');
+  setStatus(els.compileStatus, 'good', 'Template ready ✓');
 }
 
 function renderWallet() {
@@ -241,7 +241,7 @@ function renderTransactionState(txHash = '—', contractAddress = '—') {
 
 function renderHistory() {
   if (!state.history.length) {
-    els.historyList.innerHTML = '<div class="empty">Belum ada deployment. Setelah deploy sukses, hasilnya akan muncul di sini.</div>';
+    els.historyList.innerHTML = '<div class="empty">No deployments yet. Successful deployments will appear here.</div>';
     return;
   }
   els.historyList.innerHTML = state.history
@@ -405,7 +405,7 @@ async function deployOnce() {
   const draft = draftValues();
   const errors = validateDraft(draft);
   if (errors.length) {
-    setStatus(els.compileStatus, 'warn', 'Fix form errors first');
+    setStatus(els.compileStatus, 'warn', 'Please fix the form errors first');
     errors.forEach((error) => log('bad', error));
     return;
   }
@@ -427,8 +427,8 @@ async function deployOnce() {
     const factory = new ethers.ContractFactory(state.artifact.abi, state.artifact.bytecode, state.signer);
     const initialSupply = ethers.toBigInt(draft.initialSupply);
 
-    log('info', `Preparing token deploy for ${draft.tokenName}`);
-    setStatus(els.compileStatus, 'good', 'Compiled template ready ✓');
+    log('info', `Preparing deployment for ${draft.tokenName}`);
+    setStatus(els.compileStatus, 'good', 'Template ready ✓');
 
     const deployTx = await factory.getDeployTransaction(draft.tokenName, draft.tokenSymbol, initialSupply);
     deployTx.gasLimit = 3500000n;
@@ -464,7 +464,7 @@ async function deployOnce() {
       createdAt: Date.now(),
     });
 
-    setStatus(els.compileStatus, 'good', 'Deployment success ✓');
+    setStatus(els.compileStatus, 'good', 'Deployment complete ✓');
     
     return true;
   } catch (error) {
@@ -486,29 +486,29 @@ async function deployMany(times) {
   const draft = draftValues();
   const errors = validateDraft(draft);
   if (errors.length) {
-    setStatus(els.compileStatus, 'warn', 'Fix form errors first');
+    setStatus(els.compileStatus, 'warn', 'Please fix the form errors first');
     errors.forEach((error) => log('bad', error));
-    showToast('Fix form errors first', 'error');
+    showToast('Please fix the form errors first', 'error');
     return;
   }
-  log('warn', `Quest mode: deploying ${times} contracts sequentially.`);
-  showToast(`Starting batch deploy: ${times} contracts`, 'info');
+  log('warn', `Batch mode: deploying ${times} contracts sequentially.`);
+  showToast(`Starting batch deployment: ${times} contracts`, 'info');
   
   let successCount = 0;
   for (let i = 0; i < times; i += 1) {
-    log('info', `Batch deploy ${i + 1}/${times}`);
+    log('info', `Batch deployment ${i + 1}/${times}`);
     // eslint-disable-next-line no-await-in-loop
     const ok = await deployOnce();
     if (ok) {
       successCount += 1;
     } else {
-      showToast(`Batch stopped at ${i + 1}/${times}. ${successCount} succeeded.`, 'error');
+      showToast(`Batch deployment stopped at ${i + 1}/${times}. ${successCount} succeeded.`, 'error');
       break;
     }
   }
   
   if (successCount === times) {
-    showToast(`Batch complete! ${successCount}/${times} contracts deployed.`, 'success');
+    showToast(`Batch deployment complete! ${successCount}/${times} contracts deployed.`, 'success');
   }
 }
 
@@ -521,9 +521,9 @@ async function compileTemplate() {
   const draft = draftValues();
   const errors = validateDraft(draft);
   if (errors.length) {
-    setStatus(els.compileStatus, 'warn', 'Fix form errors first');
+    setStatus(els.compileStatus, 'warn', 'Please fix the form errors first');
     errors.forEach((error) => log('bad', error));
-    showToast('Fix form errors first', 'error');
+    showToast('Please fix the form errors first', 'error');
     return;
   }
   state.isCompiling = true;
@@ -534,7 +534,7 @@ async function compileTemplate() {
   log('good', `Template compiled locally: ${shortHash(state.compiledHash)}`);
   showToast('Template compiled successfully', 'success');
   setTimeout(() => {
-    if (!state.isDeploying) setStatus(els.compileStatus, 'good', 'Compile ready ✓');
+    if (!state.isDeploying) setStatus(els.compileStatus, 'good', 'Template ready ✓');
     state.isCompiling = false;
     els.compileBtn.classList.remove('loading');
     els.compileBtn.disabled = false;
@@ -542,8 +542,8 @@ async function compileTemplate() {
 }
 
 function fillSample() {
-  els.tokenName.value = 'Base Quest Token';
-  els.tokenSymbol.value = 'BQT';
+  els.tokenName.value = 'Base Token';
+  els.tokenSymbol.value = 'BASE';
   els.initialSupply.value = '1000000';
   renderSource();
 }
