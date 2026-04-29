@@ -466,9 +466,6 @@ async function deployOnce() {
 
     setStatus(els.compileStatus, 'good', 'Deployment success ✓');
     
-    // Farcaster share prompt
-    await promptShare(draft.tokenName, contractAddress, tx.hash);
-    
     return true;
   } catch (error) {
     console.error(error);
@@ -556,39 +553,6 @@ function resetForm() {
   els.tokenSymbol.value = DEFAULTS.tokenSymbol;
   els.initialSupply.value = DEFAULTS.initialSupply;
   renderSource();
-}
-
-async function promptShare(tokenName, contractAddress, txHash) {
-  try {
-    const appUrl = window.location.origin + window.location.pathname;
-    const explorerUrl = `${currentExplorerBase()}/address/${contractAddress}`;
-    const chain = activeChain();
-
-    // Build share text with user context if available
-    let text = `Just deployed token ${tokenName} on ${chain.label} 🚀⚡
-
-`;
-
-    if (state.farcasterUser) {
-      text += `Built by @${state.farcasterUser.username}
-`;
-    }
-
-    text += `Contract: ${shortAddress(contractAddress)}
-`;
-    text += `
-Token name, symbol, and supply are now onchain.`;
-
-    await sdk.actions.composeCast({
-      text,
-      embeds: [explorerUrl, appUrl],
-    });
-
-    showToast('Cast composer opened', 'success');
-    log('info', 'Share dialog opened');
-  } catch (error) {
-    console.warn('Farcaster share unavailable:', error);
-  }
 }
 
 async function copyLatestAddress() {
