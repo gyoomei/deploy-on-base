@@ -290,7 +290,7 @@
       }
       .grid {
         display: grid;
-        grid-template-columns: 330px minmax(0, 1fr) 350px;
+        grid-template-columns: 340px minmax(0, 1fr);
         gap: 12px;
         min-height: calc(100vh - 106px);
       }
@@ -362,6 +362,9 @@
       }
       .quick strong { display: block; font-size: 13px; margin-bottom: 4px; }
       .quick span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
+      .editor-panel {
+        display: none;
+      }
       .editor-wrap {
         display: flex;
         flex-direction: column;
@@ -625,7 +628,7 @@
             <div class="logo">B</div>
             <div>
               <h1>Deploy on Base</h1>
-              <p>Simple token deploy UI.</p>
+              <p>Minimal token deploy app.</p>
             </div>
           </div>
           <div class="top-actions">
@@ -640,30 +643,30 @@
         <div class="grid">
           <aside class="panel">
             <div class="panel-header">
-              <h2>Simple deploy form</h2>
-              <p>Isi tiga field utama, sisanya otomatis.</p>
+              <h2>Token details</h2>
+              <p>Enter the core token details. The rest is handled automatically.</p>
             </div>
             <div class="panel-body stack">
-              <div class="chip">Quest-ready • deploy contract on Base</div>
+              <div class="chip">Base deploy ready</div>
               <div class="field">
                 <label for="token-name"><span>Token name</span><span class="mini">Required</span></label>
-                <input id="token-name" type="text" placeholder="Base Quest Token" value="Base Quest Token" />
+                <input id="token-name" type="text" placeholder="Base Token" value="Base Token" />
               </div>
               <div class="field">
                 <label for="token-symbol"><span>Token symbol</span><span class="mini">Required</span></label>
-                <input id="token-symbol" type="text" maxlength="8" placeholder="BQT" value="BQT" />
+                <input id="token-symbol" type="text" maxlength="8" placeholder="BASE" value="BASE" />
               </div>
               <div class="field">
                 <label for="initial-supply"><span>Initial supply</span><span class="mini">uint256</span></label>
                 <input id="initial-supply" type="number" min="1" step="1" placeholder="1000000" value="1000000" />
-                <div class="hint">Supply dihitung langsung sebagai angka bulat. Contract akan mengalikan ke 18 decimals.</div>
+                <div class="hint">Supply is entered as a whole number. The contract converts it to 18 decimals.</div>
               </div>
               <div class="split">
                 <button id="fill-sample-btn" class="btn ghost small" style="display:none;">Fill sample</button>
                 <button id="reset-btn" class="btn ghost small" style="display:none;">Reset</button>
               </div>
               <div class="field">
-                <label for="chain-select"><span>Target chain</span><span class="mini">Quest recommended</span></label>
+                <label for="chain-select"><span>Target chain</span><span class="mini">Suggested</span></label>
                 <select id="chain-select">
                   <option value="base" selected>Base Mainnet (8453)</option>
                   <option value="base-sepolia">Base Sepolia (84532)</option>
@@ -681,7 +684,7 @@
                 </div>
                 <div class="status-row">
                   <span id="compile-status" class="status warn">Waiting for contract template</span>
-                  <span id="artifact-status" class="status">Artifact loading...</span>
+                  <span id="artifact-status" class="status">Loading artifact...</span>
                 </div>
               </div>
             </div>
@@ -705,7 +708,7 @@
           <section class="panel console-panel">
             <div class="panel-header">
               <h2>Deploy console</h2>
-              <p>Wallet status, tx hash, contract address, dan history.</p>
+              <p>Wallet status, transaction hash, contract address, and history.</p>
             </div>
             <div class="panel-body console">
               <div class="wallet-card">
@@ -754,7 +757,7 @@
                   <button id="clear-history-btn" class="btn small ghost">Clear</button>
                 </div>
                 <div id="history-list" class="history-list">
-                  <div class="empty">Belum ada deployment. Setelah deploy sukses, hasilnya akan muncul di sini.</div>
+                  <div class="empty">No deployments yet. Successful deployments will appear here.</div>
                 </div>
               </div>
             </div>
@@ -763,6 +766,6 @@
       </main>
     </div>
 
-    <script type="module" src="./app.js?v=5"></script>
+    <script type="module" src="./app.js?v=7"></script>
   </body>
 </html>
