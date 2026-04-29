@@ -371,6 +371,16 @@ function openExplorer(path) {
   window.open(`${currentExplorerBase()}${path}`, '_blank', 'noopener,noreferrer');
 }
 
+async function waitForReceipt(provider, txHash, timeoutMs = 180000, intervalMs = 3000) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const receipt = await provider.getTransactionReceipt(txHash);
+    if (receipt) return receipt;
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  throw new Error(`Timed out waiting for tx receipt: ${txHash}`);
+}
+
 function registerHistory(item) {
   state.history.unshift(item);
   state.history = state.history.slice(0, 25);
@@ -408,14 +418,19 @@ async function deployOnce() {
     log('info', `Preparing token deploy for ${draft.tokenName}`);
     setStatus(els.compileStatus, 'good', 'Compiled template ready ✓');
 
-    const contract = await factory.deploy(draft.tokenName, draft.tokenSymbol, initialSupply);
-    const tx = contract.deploymentTransaction();
+    const deployTx = await factory.getDeployTransaction(draft.tokenName, draft.tokenSymbol, initialSupply);
+    deployTx.gasLimit = 3500000n;
+    const tx = await state.signer.sendTransaction(deployTx);
     renderTransactionState(tx.hash, 'pending...');
     log('info', `Transaction sent: ${tx.hash}`);
-    log('info', 'Waiting for confirmation...');
+    log('info', 'Waiting for confirmation via public RPC...');
 
-    await tx.wait();
-    const contractAddress = await contract.getAddress();
+    const rpc = new ethers.JsonRpcProvider(activeChain().rpcUrls[0], activeChain().chainId);
+    const receipt = await waitForReceipt(rpc, tx.hash);
+    if (!receipt || receipt.status !== 1) {
+      throw new Error(`Transaction failed or reverted: ${tx.hash}`);
+    }
+    const contractAddress = receipt.contractAddress || ethers.getCreateAddress({ from: state.address, nonce: tx.nonce });
     renderTransactionState(tx.hash, contractAddress);
     log('good', `Contract deployed: ${contractAddress}`);
     log('good', `Open on explorer: ${currentExplorerBase()}/address/${contractAddress}`);
@@ -439,10 +454,10 @@ async function deployOnce() {
     return true;
   } catch (error) {
     console.error(error);
-    const msg = error?.shortMessage || error?.message || String(error);
+    const msg = error?.shortMessage || error?.message || error?.cause?.message || String(error);
     log('bad', msg);
     setStatus(els.compileStatus, 'warn', 'Deployment failed');
-    showToast('Deployment failed', 'error');
+    showToast(msg, 'error');
     return false;
   } finally {
     state.isDeploying = false;
