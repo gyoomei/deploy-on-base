@@ -73,6 +73,7 @@ const els = {
   deploy5Btn: document.getElementById('deploy-5-btn'),
   copyAddressBtn: document.getElementById('copy-address-btn'),
   openBasescanBtn: document.getElementById('open-basescan-btn'),
+  shareDeployBtn: document.getElementById('share-deploy-btn'),
   clearHistoryBtn: document.getElementById('clear-history-btn'),
   fillSampleBtn: document.getElementById('fill-sample-btn'),
   resetBtn: document.getElementById('reset-btn'),
@@ -230,12 +231,16 @@ function renderTransactionState(txHash = '—', contractAddress = '—') {
   els.contractAddress.textContent = contractAddress;
   state.latestTxHash = txHash === '—' ? '' : txHash;
   state.latestAddress = contractAddress === '—' ? '' : contractAddress;
-  
-  // Show BaseScan button if contract deployed
-  if (state.latestAddress) {
+
+  const hasDeployResult = Boolean(state.latestAddress && state.latestTxHash);
+
+  // Show actions only after successful deploy
+  if (hasDeployResult) {
     els.openBasescanBtn.style.display = 'inline-flex';
+    els.shareDeployBtn.style.display = 'inline-flex';
   } else {
     els.openBasescanBtn.style.display = 'none';
+    els.shareDeployBtn.style.display = 'none';
   }
 }
 
@@ -381,6 +386,50 @@ function currentExplorerBase() {
 
 function openExplorer(path) {
   window.open(`${currentExplorerBase()}${path}`, '_blank', 'noopener,noreferrer');
+}
+
+async function shareLatestDeploy() {
+  if (!state.latestAddress || !state.latestTxHash) {
+    showToast('Deploy contract dulu sebelum share', 'error');
+    return;
+  }
+
+  const chain = activeChain();
+  const txUrl = `${currentExplorerBase()}/tx/${state.latestTxHash}`;
+  const addressUrl = `${currentExplorerBase()}/address/${state.latestAddress}`;
+  const appUrl = `${window.location.origin}${window.location.pathname}`;
+  const text = [
+    `I just deployed an ERC20 contract on ${chain.label} 🚀`,
+    `Contract: ${state.latestAddress}`,
+    `Tx: ${state.latestTxHash}`,
+    '',
+    'Deploy yours here 👇',
+  ].join('\n');
+
+  // Primary: native Farcaster share
+  try {
+    await sdk.actions.composeCast({
+      text,
+      embeds: [appUrl, txUrl],
+    });
+    log('good', 'Opened Farcaster share composer.');
+    showToast('Share composer opened', 'success');
+    return;
+  } catch (error) {
+    console.warn('composeCast failed, using fallback', error);
+  }
+
+  // Fallback for non-Farcaster browsers
+  const fallbackText = `${text}\n${txUrl}\n${addressUrl}\n${appUrl}`;
+  try {
+    await navigator.clipboard.writeText(fallbackText);
+  } catch {
+    // ignore clipboard failures
+  }
+  const warpcastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(fallbackText)}`;
+  window.open(warpcastUrl, '_blank', 'noopener,noreferrer');
+  log('warn', 'composeCast unavailable. Opened Warpcast web composer fallback.');
+  showToast('Opened web share fallback', 'info');
 }
 
 async function waitForReceipt(provider, txHash, timeoutMs = 180000, intervalMs = 3000) {
@@ -655,6 +704,15 @@ async function init() {
   els.openBasescanBtn.addEventListener('click', () => {
     if (!state.latestAddress) return;
     openExplorer(`/address/${state.latestAddress}`);
+  });
+
+  els.shareDeployBtn.addEventListener('click', async () => {
+    try {
+      await shareLatestDeploy();
+    } catch (error) {
+      log('bad', error?.message || String(error));
+      showToast('Failed to open share composer', 'error');
+    }
   });
 
   els.clearHistoryBtn.addEventListener('click', () => {
