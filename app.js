@@ -394,14 +394,12 @@ async function shareLatestDeploy() {
     return;
   }
 
-  const chain = activeChain();
-  const txUrl = `${currentExplorerBase()}/tx/${state.latestTxHash}`;
-  const addressUrl = `${currentExplorerBase()}/address/${state.latestAddress}`;
   const appUrl = `${window.location.origin}${window.location.pathname}`;
+  const draft = draftValues();
+  const tokenName = draft.tokenName || 'My Token';
+  const tokenSymbol = draft.tokenSymbol || 'TOKEN';
   const text = [
-    `I just deployed an ERC20 contract on ${chain.label} 🚀`,
-    `Contract: ${state.latestAddress}`,
-    `Tx: ${state.latestTxHash}`,
+    `I just deployed ${tokenName} (${tokenSymbol}) on Base 🚀`,
     '',
     'Deploy yours here 👇',
   ].join('\n');
@@ -410,7 +408,7 @@ async function shareLatestDeploy() {
   try {
     await sdk.actions.composeCast({
       text,
-      embeds: [appUrl, txUrl],
+      embeds: [appUrl],
     });
     log('good', 'Opened Farcaster share composer.');
     showToast('Share composer opened', 'success');
@@ -420,7 +418,7 @@ async function shareLatestDeploy() {
   }
 
   // Fallback for non-Farcaster browsers
-  const fallbackText = `${text}\n${txUrl}\n${addressUrl}\n${appUrl}`;
+  const fallbackText = `${text}\n${appUrl}`;
   try {
     await navigator.clipboard.writeText(fallbackText);
   } catch {
