@@ -135,11 +135,11 @@ function draftValues() {
 
 function validateDraft(draft) {
   const errors = [];
-  if (!draft.tokenName) errors.push('Token name wajib diisi.');
-  if (!draft.tokenSymbol) errors.push('Token symbol wajib diisi.');
-  if (!draft.initialSupply) errors.push('Initial supply wajib diisi.');
+  if (!draft.tokenName) errors.push('Token name is required.');
+  if (!draft.tokenSymbol) errors.push('Token symbol is required.');
+  if (!draft.initialSupply) errors.push('Initial supply is required.');
   if (!Number.isInteger(Number(draft.initialSupply)) || Number(draft.initialSupply) <= 0) {
-    errors.push('Initial supply harus angka bulat lebih dari 0.');
+    errors.push('Initial supply must be a whole number greater than 0.');
   }
   return errors;
 }
@@ -219,13 +219,16 @@ function renderWallet() {
     els.connectionState.textContent = 'Connected';
     els.connectionState.classList.add('good');
     els.connectBtn.textContent = 'Connected';
+    if (!state.isDeploying) els.deployBtn.disabled = false;
   } else {
     els.walletPill.textContent = 'Not connected';
     els.walletAddress.textContent = '—';
     els.connectionState.textContent = 'Disconnected';
     els.connectionState.classList.remove('good');
     els.connectBtn.textContent = 'Connect Wallet';
+    if (!state.isDeploying) els.deployBtn.disabled = false;
   }
+  els.copyAddressBtn.disabled = !state.latestAddress;
   const chain = activeChain();
   els.networkPill.textContent = chain.label;
   els.walletChain.textContent = `${chain.label} (${chain.chainId})`;
@@ -240,9 +243,10 @@ function renderTransactionState(txHash = '—', contractAddress = '—') {
   const hasDeployResult = Boolean(state.latestAddress && state.latestTxHash);
 
   // Show actions only after successful deploy
+  els.copyAddressBtn.disabled = !hasDeployResult;
   if (hasDeployResult) {
     els.openBasescanBtn.style.display = 'inline-flex';
-    els.shareDeployBtn.style.display = 'inline-flex';
+    els.shareDeployBtn.style.display = 'none';
   } else {
     els.openBasescanBtn.style.display = 'none';
     els.shareDeployBtn.style.display = 'none';
@@ -282,17 +286,16 @@ function renderHistory() {
 
 function setDeployButtons(disabled) {
   els.deployBtn.disabled = disabled;
-  els.deploy5Btn.disabled = disabled;
-  els.compileBtn.disabled = disabled;
+  if (els.deploy5Btn) els.deploy5Btn.disabled = disabled;
+  if (els.compileBtn) els.compileBtn.disabled = disabled;
   els.connectBtn.disabled = disabled && !state.address;
-  
-  // Toggle loading class
+
   if (disabled) {
     els.deployBtn.classList.add('loading');
-    els.deploy5Btn.classList.add('loading');
+    if (els.deploy5Btn) els.deploy5Btn.classList.add('loading');
   } else {
     els.deployBtn.classList.remove('loading');
-    els.deploy5Btn.classList.remove('loading');
+    if (els.deploy5Btn) els.deploy5Btn.classList.remove('loading');
   }
 }
 
@@ -682,21 +685,25 @@ async function init() {
     }
   });
 
-  els.compileBtn.addEventListener('click', async () => {
-    try {
-      await compileTemplate();
-    } catch (error) {
-      log('bad', error?.message || String(error));
-    }
-  });
+  if (els.compileBtn) {
+    els.compileBtn.addEventListener('click', async () => {
+      try {
+        await compileTemplate();
+      } catch (error) {
+        log('bad', error?.message || String(error));
+      }
+    });
+  }
 
   els.deployBtn.addEventListener('click', async () => {
     await deployOnce();
   });
 
-  els.deploy5Btn.addEventListener('click', async () => {
-    await deployMany(5);
-  });
+  if (els.deploy5Btn) {
+    els.deploy5Btn.addEventListener('click', async () => {
+      await deployMany(5);
+    });
+  }
 
   els.copyAddressBtn.addEventListener('click', async () => {
     try {
