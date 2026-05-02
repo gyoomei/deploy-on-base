@@ -8,14 +8,14 @@
     <meta name="theme-color" content="#050914" />
     <meta property="og:title" content="Deploy on Base" />
     <meta property="og:description" content="Deploy an ERC20 token on Base from a clean focused Mini App." />
-    <meta property="og:image" content="https://gyoomei.github.io/deploy-on-base/assets/og.png?v=13" />
+    <meta property="og:image" content="https://gyoomei.github.io/deploy-on-base/assets/og.png?v=14" />
     <meta
       name="fc:miniapp"
-      content='{"version":"1","imageUrl":"https://gyoomei.github.io/deploy-on-base/assets/og.png?v=13","button":{"title":"Deploy Token","action":{"type":"launch_frame","name":"Deploy on Base","url":"https://gyoomei.github.io/deploy-on-base/?v=13","splashImageUrl":"https://gyoomei.github.io/deploy-on-base/assets/icon.svg","splashBackgroundColor":"#050914"}}}'
+      content='{"version":"1","imageUrl":"https://gyoomei.github.io/deploy-on-base/assets/og.png?v=14","button":{"title":"Deploy Token","action":{"type":"launch_frame","name":"Deploy on Base","url":"https://gyoomei.github.io/deploy-on-base/?v=14","splashImageUrl":"https://gyoomei.github.io/deploy-on-base/assets/icon.svg","splashBackgroundColor":"#050914"}}}'
     />
     <meta
       name="fc:frame"
-      content='{"version":"1","imageUrl":"https://gyoomei.github.io/deploy-on-base/assets/og.png?v=13","button":{"title":"Deploy Token","action":{"type":"launch_frame","name":"Deploy on Base","url":"https://gyoomei.github.io/deploy-on-base/?v=13"}}}'
+      content='{"version":"1","imageUrl":"https://gyoomei.github.io/deploy-on-base/assets/og.png?v=14","button":{"title":"Deploy Token","action":{"type":"launch_frame","name":"Deploy on Base","url":"https://gyoomei.github.io/deploy-on-base/?v=14"}}}'
     />
     <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -205,6 +205,20 @@
       .mobile-brand { display: none; align-items: center; gap: 10px; min-width: 0; }
       .mobile-brand .logo { width: 40px; height: 40px; border-radius: 15px; font-size: 15px; }
       .mobile-brand h1 { margin: 0; font-size: 15px; letter-spacing: -.035em; }
+      .mobile-tab {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(246,199,107,.34);
+        color: #fff3ce;
+        background: linear-gradient(135deg, rgba(246,199,107,.18), rgba(0,82,255,.14));
+        font-size: 12px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
       .top-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
       .pill {
         min-height: 39px;
@@ -396,21 +410,44 @@
 
       .hidden-control, .utility-hidden, #share-deploy-btn { display: none !important; }
       @media (max-width: 920px) {
-        .shell { display: block; padding: 12px; }
-        .sidebar { position: relative; top: auto; height: auto; min-height: 0; padding: 12px; margin-bottom: 12px; border-radius: 26px; }
+        .shell { display: flex; flex-direction: column; padding: 12px; }
+        .sidebar {
+          position: sticky;
+          top: 8px;
+          z-index: 20;
+          height: auto;
+          min-height: 0;
+          order: 2;
+          padding: 10px;
+          margin: 0 0 12px;
+          border-radius: 24px;
+          background: rgba(5, 9, 20, 0.86);
+        }
         .sidebar .brand, .sidebar-foot { display: none; }
         .nav-label { display: none; }
-        .nav-item { min-height: 50px; border-radius: 18px; }
-        .content { gap: 12px; }
-        .mobile-brand { display: flex; }
+        .nav { display: block; }
+        .nav-item {
+          min-height: 54px;
+          border-radius: 18px;
+          justify-content: center;
+          background:
+            linear-gradient(135deg, rgba(246,199,107,.24), rgba(0,82,255,.18)),
+            rgba(255,255,255,.07);
+        }
+        .nav-icon { width: 32px; height: 32px; }
+        .nav-title { font-size: 14px; }
+        .nav-sub { font-size: 10px; }
+        .content { gap: 12px; order: 1; }
+        .mobile-brand, .mobile-tab { display: flex; }
         .deploy-grid { grid-template-columns: 1fr; }
       }
       @media (max-width: 520px) {
         .shell { padding: 10px; }
         .topbar { border-radius: 24px; padding: 10px; }
         .top-actions { gap: 6px; }
-        .pill:first-child { display: none; }
-        .btn.primary:not(#deploy-btn) { min-width: 96px; }
+        .pill { display: none; }
+        .mobile-tab { flex: 1 1 auto; min-width: 112px; }
+        .btn.primary:not(#deploy-btn) { min-width: 92px; padding-inline: 12px; }
         .hero-card { padding: 18px; border-radius: 26px; }
         .hero-card h2 { font-size: 38px; }
         .hero-metrics { grid-template-columns: 1fr; }
@@ -452,6 +489,7 @@
                 <h1>Deploy on Base</h1>
               </div>
             </div>
+            <div class="mobile-tab" aria-hidden="true">Deploy Token</div>
             <div class="top-actions">
               <div class="pill"><strong>Network</strong><span id="network-pill">Base Mainnet</span></div>
               <div class="pill"><strong>Wallet</strong><span id="wallet-pill">Not connected</span></div>
@@ -586,6 +624,6 @@
       </div>
     </div>
 
-    <script type="module" src="./app.js?v=13"></script>
+    <script type="module" src="./app.js?v=14"></script>
   </body>
 </html>
