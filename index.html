@@ -4,73 +4,67 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Deploy on Base</title>
-    <meta name="description" content="A clean Farcaster Mini App for deploying ERC20 tokens on Base with one focused mobile-first flow." />
-    <meta name="theme-color" content="#07111f" />
+    <meta name="description" content="A focused Farcaster Mini App for deploying ERC20 tokens on Base." />
+    <meta name="theme-color" content="#050914" />
     <meta property="og:title" content="Deploy on Base" />
-    <meta property="og:description" content="Create and deploy an ERC20 token on Base from a clean Mini App interface." />
-    <meta property="og:image" content="https://gyoomei.github.io/deploy-on-base/assets/og.png?v=10" />
+    <meta property="og:description" content="Deploy an ERC20 token on Base from a clean focused Mini App." />
+    <meta property="og:image" content="https://gyoomei.github.io/deploy-on-base/assets/og.png?v=13" />
     <meta
       name="fc:miniapp"
-      content='{"version":"1","imageUrl":"https://gyoomei.github.io/deploy-on-base/assets/og.png?v=10","button":{"title":"Deploy Token","action":{"type":"launch_frame","name":"Deploy on Base","url":"https://gyoomei.github.io/deploy-on-base/?v=10","splashImageUrl":"https://gyoomei.github.io/deploy-on-base/assets/icon.svg","splashBackgroundColor":"#07111f"}}}'
+      content='{"version":"1","imageUrl":"https://gyoomei.github.io/deploy-on-base/assets/og.png?v=13","button":{"title":"Deploy Token","action":{"type":"launch_frame","name":"Deploy on Base","url":"https://gyoomei.github.io/deploy-on-base/?v=13","splashImageUrl":"https://gyoomei.github.io/deploy-on-base/assets/icon.svg","splashBackgroundColor":"#050914"}}}'
     />
     <meta
       name="fc:frame"
-      content='{"version":"1","imageUrl":"https://gyoomei.github.io/deploy-on-base/assets/og.png?v=10","button":{"title":"Deploy Token","action":{"type":"launch_frame","name":"Deploy on Base","url":"https://gyoomei.github.io/deploy-on-base/?v=10"}}}'
+      content='{"version":"1","imageUrl":"https://gyoomei.github.io/deploy-on-base/assets/og.png?v=13","button":{"title":"Deploy Token","action":{"type":"launch_frame","name":"Deploy on Base","url":"https://gyoomei.github.io/deploy-on-base/?v=13"}}}'
     />
     <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="preconnect" href="https://esm.sh" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.16.0/dist/ethers.umd.min.js"></script>
     <style>
       :root {
         color-scheme: dark;
-        --bg: #060f1d;
-        --bg-soft: #0c182b;
-        --card: rgba(12, 23, 40, 0.86);
-        --card-strong: rgba(16, 30, 52, 0.96);
+        --bg: #050914;
+        --bg-2: #07111f;
+        --panel: rgba(10, 18, 34, 0.72);
+        --panel-strong: rgba(13, 24, 44, 0.92);
+        --panel-soft: rgba(255, 255, 255, 0.045);
         --line: rgba(148, 163, 184, 0.18);
-        --line-strong: rgba(121, 181, 255, 0.42);
-        --text: #f8fbff;
-        --muted: #9aafcd;
-        --muted-2: #6f86a8;
-        --blue: #2563ff;
-        --blue-2: #67c1ff;
-        --green: #38e4a0;
-        --amber: #fbbf24;
+        --line-strong: rgba(90, 148, 255, 0.36);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --muted-2: #64748b;
+        --base: #0052ff;
+        --base-2: #43b5ff;
+        --gold: #f6c76b;
+        --gold-2: #ffd98a;
+        --green: #34d399;
         --red: #fb7185;
-        --shadow: 0 24px 80px rgba(1, 8, 20, 0.45);
-        --radius-xl: 28px;
-        --radius-lg: 20px;
-        --radius-md: 14px;
-        --sans: "Space Grotesk", "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        --serif: "Sora", "DM Serif Display", "Times New Roman", serif;
+        --shadow: 0 28px 90px rgba(0, 0, 0, 0.46);
+        --radius-xl: 30px;
+        --radius-lg: 22px;
+        --radius-md: 16px;
+        --sans: "Sora", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
       }
 
       * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-      
-      /* Custom scrollbar */
-      ::-webkit-scrollbar { width: 8px; height: 8px; }
-      ::-webkit-scrollbar-track { background: rgba(2, 8, 23, 0.3); border-radius: 10px; }
-      ::-webkit-scrollbar-thumb { background: rgba(67, 181, 255, 0.3); border-radius: 10px; transition: background 0.3s ease; }
-      ::-webkit-scrollbar-thumb:hover { background: rgba(67, 181, 255, 0.5); }
-      
       html { min-height: 100%; scroll-behavior: smooth; }
       body {
         min-height: 100vh;
         margin: 0;
         font-family: var(--sans);
         color: var(--text);
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        text-rendering: optimizeLegibility;
         background:
-          radial-gradient(circle at 18% -8%, rgba(56, 189, 248, 0.16), transparent 34%),
-          radial-gradient(circle at 92% 6%, rgba(59, 130, 246, 0.14), transparent 28%),
-          linear-gradient(180deg, #060d19 0%, #081224 48%, #070f1d 100%);
+          radial-gradient(circle at 18% -8%, rgba(246, 199, 107, 0.16), transparent 30%),
+          radial-gradient(circle at 100% 12%, rgba(0, 82, 255, 0.24), transparent 34%),
+          radial-gradient(circle at 60% 110%, rgba(67, 181, 255, 0.13), transparent 38%),
+          linear-gradient(180deg, #050914 0%, #07111f 46%, #050914 100%);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
         overflow-x: hidden;
       }
       body::before {
@@ -79,260 +73,251 @@
         inset: 0;
         pointer-events: none;
         background:
-          linear-gradient(rgba(255,255,255,0.026) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255,255,255,0.026) 1px, transparent 1px);
-        background-size: 32px 32px;
+          linear-gradient(rgba(255,255,255,0.032) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.032) 1px, transparent 1px);
+        background-size: 34px 34px;
         mask-image: linear-gradient(to bottom, #000 0%, transparent 76%);
-        animation: gridPulse 8s ease-in-out infinite;
-      }
-      @keyframes gridPulse {
-        0%, 100% { opacity: 0.4; }
-        50% { opacity: 0.7; }
+        animation: gridDrift 12s ease-in-out infinite alternate;
       }
       body::after {
         content: "";
         position: fixed;
-        inset: auto -10% -25% -10%;
-        height: 45vh;
+        inset: auto -20% -28% -20%;
+        height: 52vh;
         pointer-events: none;
-        background: radial-gradient(ellipse at center, rgba(0, 82, 255, 0.18), transparent 68%);
-        filter: blur(22px);
-        animation: glowPulse 6s ease-in-out infinite;
+        background: radial-gradient(ellipse at center, rgba(0, 82, 255, 0.22), transparent 64%);
+        filter: blur(20px);
       }
-      @keyframes glowPulse {
-        0%, 100% { opacity: 0.6; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.05); }
-      }
+      @keyframes gridDrift { from { opacity: .42; transform: translateY(0); } to { opacity: .7; transform: translateY(16px); } }
+      @keyframes rise { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: none; } }
+      @keyframes glowPulse { 0%,100% { opacity: .65; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
+      @keyframes shimmerX { from { transform: translateX(-130%); } to { transform: translateX(130%); } }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes successPop { 0% { transform: scale(.97); } 45% { transform: scale(1.025); } 100% { transform: scale(1); } }
 
       button, input, textarea, select { font: inherit; }
       button { cursor: pointer; }
       code, .inline-code { font-family: var(--mono); }
+      ::selection { background: rgba(246,199,107,.28); }
 
-      .app { min-height: 100vh; position: relative; z-index: 1; }
-      .topbar {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        backdrop-filter: blur(22px);
-        background: linear-gradient(180deg, rgba(6, 13, 25, 0.92), rgba(6, 13, 25, 0.68));
-        border-bottom: 1px solid rgba(148, 163, 184, 0.18);
-        animation: topbarSlideDown 0.5s ease both;
-      }
-      @keyframes topbarSlideDown {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .topbar-inner {
-        width: min(520px, 100%);
+      .app { position: relative; z-index: 1; min-height: 100vh; }
+      .shell {
+        width: min(1120px, 100%);
         margin: 0 auto;
-        padding: 12px 14px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        padding: 18px;
+        display: grid;
+        grid-template-columns: 236px minmax(0, 1fr);
+        gap: 16px;
       }
-      .brand { display: flex; align-items: center; gap: 11px; min-width: 0; flex: 1; }
+
+      .sidebar {
+        position: sticky;
+        top: 18px;
+        height: calc(100vh - 36px);
+        min-height: 660px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-xl);
+        background: linear-gradient(180deg, rgba(11, 19, 36, 0.88), rgba(7, 13, 25, 0.72));
+        box-shadow: var(--shadow), inset 0 1px rgba(255,255,255,.07);
+        backdrop-filter: blur(22px);
+        padding: 16px;
+        overflow: hidden;
+        animation: rise .48s ease both;
+      }
+      .sidebar::before {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        left: -72px;
+        top: -54px;
+        background: radial-gradient(circle, rgba(246,199,107,.24), transparent 68%);
+        animation: glowPulse 5s ease-in-out infinite;
+      }
+      .brand { position: relative; display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
       .logo {
-        width: 46px;
-        height: 46px;
+        width: 48px;
+        height: 48px;
+        flex: 0 0 auto;
         border-radius: 18px;
         display: grid;
         place-items: center;
-        color: #fff;
-        font-weight: 950;
-        letter-spacing: -0.04em;
-        background: linear-gradient(145deg, #0052ff, #43b5ff);
-        box-shadow: 0 18px 44px rgba(0, 82, 255, 0.36), inset 0 1px rgba(255,255,255,.3);
-        animation: logoFloat 3s ease-in-out infinite;
-        transition: transform 0.3s ease;
+        color: #07111f;
+        font-weight: 900;
+        letter-spacing: -0.06em;
+        background: linear-gradient(145deg, #fff4cf, var(--gold) 46%, #b77c20 100%);
+        box-shadow: 0 18px 46px rgba(246,199,107,.22), inset 0 1px rgba(255,255,255,.8);
       }
-      .logo:hover {
-        transform: scale(1.05) rotate(5deg);
+      .brand h1 { margin: 0; font-size: 16px; line-height: 1.05; letter-spacing: -.04em; font-weight: 800; }
+      .brand p { margin: 5px 0 0; color: var(--muted); font-size: 11px; font-weight: 600; }
+      .nav-label { position: relative; margin: 12px 0 9px; color: var(--muted-2); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .16em; }
+      .nav { position: relative; display: grid; gap: 10px; }
+      .nav-item {
+        width: 100%;
+        border: 1px solid rgba(246,199,107,.34);
+        border-radius: 20px;
+        min-height: 58px;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-align: left;
+        color: #fff7df;
+        background:
+          linear-gradient(135deg, rgba(246,199,107,.19), rgba(0,82,255,.14)),
+          rgba(255,255,255,.045);
+        box-shadow: 0 16px 44px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.08);
       }
-      @keyframes logoFloat {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-3px); }
+      .nav-icon { width: 34px; height: 34px; border-radius: 13px; display: grid; place-items: center; background: rgba(246,199,107,.18); box-shadow: inset 0 1px rgba(255,255,255,.08); }
+      .nav-title { display: block; font-size: 13px; font-weight: 800; }
+      .nav-sub { display: block; margin-top: 3px; color: #cbd5e1; font-size: 10px; font-weight: 600; }
+      .sidebar-foot {
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        padding: 12px;
+        border: 1px solid rgba(148,163,184,.16);
+        border-radius: 20px;
+        background: rgba(2,8,23,.28);
+        color: #b9c7dc;
+        font-size: 11px;
+        line-height: 1.45;
+        font-weight: 600;
       }
-      .brand h1 { margin: 0; font-size: 18px; line-height: 1; letter-spacing: -0.035em; font-weight: 800; font-family: var(--serif); }
-      .brand p { margin: 4px 0 0; color: var(--muted); font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .top-actions { display: flex; align-items: center; gap: 8px; }
+      .sidebar-foot b { color: var(--gold-2); }
+
+      .content { min-width: 0; display: grid; gap: 14px; padding-bottom: 90px; }
+      .topbar {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-xl);
+        background: linear-gradient(180deg, rgba(11, 19, 36, 0.74), rgba(8, 15, 28, 0.56));
+        box-shadow: 0 24px 70px rgba(0,0,0,.32), inset 0 1px rgba(255,255,255,.06);
+        backdrop-filter: blur(20px);
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        animation: rise .5s ease both;
+      }
+      .mobile-brand { display: none; align-items: center; gap: 10px; min-width: 0; }
+      .mobile-brand .logo { width: 40px; height: 40px; border-radius: 15px; font-size: 15px; }
+      .mobile-brand h1 { margin: 0; font-size: 15px; letter-spacing: -.035em; }
+      .top-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
       .pill {
-        min-height: 38px;
+        min-height: 39px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 7px;
-        padding: 8px 11px;
-        border: 1px solid rgba(148, 163, 184, 0.24);
+        padding: 8px 12px;
+        border: 1px solid rgba(148, 163, 184, 0.20);
         border-radius: 999px;
-        background: rgba(148, 163, 184, 0.08);
+        background: rgba(148, 163, 184, 0.075);
         color: #e7f0ff;
         font-size: 12px;
-        font-weight: 650;
-        letter-spacing: -0.01em;
+        font-weight: 700;
         white-space: nowrap;
-        transition: all 0.3s ease;
-      }
-      .pill:hover {
-        background: rgba(148, 163, 184, 0.14);
-        border-color: rgba(148, 163, 184, 0.32);
-        transform: translateY(-1px);
       }
       .pill strong { display: none; }
-      #network-pill { color: #dbeafe; }
-      #wallet-pill { max-width: 126px; overflow: hidden; text-overflow: ellipsis; }
+      #wallet-pill { max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
 
-      .layout { width: min(520px, 100%); margin: 0 auto; padding: 14px 14px 96px; }
       .hero-card {
         position: relative;
         overflow: hidden;
-        padding: 20px;
+        padding: 24px;
         border-radius: var(--radius-xl);
-        border: 1px solid rgba(148, 163, 184, 0.18);
+        border: 1px solid rgba(246,199,107,.20);
         background:
-          linear-gradient(145deg, rgba(30, 64, 175, 0.46), rgba(15, 23, 42, 0.82) 50%, rgba(14, 165, 233, 0.12)),
-          rgba(255,255,255,.028);
-        box-shadow: 0 22px 70px rgba(2, 6, 23, 0.52), inset 0 1px rgba(255,255,255,.08);
-        animation: rise .42s ease both;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+          linear-gradient(145deg, rgba(246,199,107,.12), transparent 36%),
+          linear-gradient(135deg, rgba(0,82,255,.34), rgba(15,23,42,.82) 52%, rgba(67,181,255,.12)),
+          rgba(255,255,255,.03);
+        box-shadow: var(--shadow), inset 0 1px rgba(255,255,255,.07);
+        animation: rise .54s ease both;
       }
-      .hero-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 28px 90px rgba(2, 6, 23, 0.62), inset 0 1px rgba(255,255,255,.12);
+      .hero-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(100deg, transparent 0%, rgba(255,255,255,.07) 42%, transparent 68%);
+        transform: translateX(-130%);
+        animation: shimmerX 5.4s ease-in-out infinite;
       }
       .hero-card::after {
         content: "";
         position: absolute;
-        width: 170px;
-        height: 170px;
+        width: 230px;
+        height: 230px;
         border-radius: 50%;
-        right: -52px;
-        top: -42px;
-        background: radial-gradient(circle, rgba(67,181,255,.40), transparent 68%);
-        animation: heroGlow 4s ease-in-out infinite;
+        right: -76px;
+        top: -88px;
+        background: radial-gradient(circle, rgba(67,181,255,.38), transparent 66%);
+        animation: glowPulse 4.6s ease-in-out infinite;
       }
-      @keyframes heroGlow {
-        0%, 100% { opacity: 0.6; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.1); }
-      }
+      .hero-inner { position: relative; z-index: 1; max-width: 720px; }
       .eyebrow {
         display: inline-flex;
         align-items: center;
         gap: 7px;
-        color: #b7d4ff;
+        color: #ffe7aa;
         text-transform: uppercase;
-        letter-spacing: .14em;
+        letter-spacing: .16em;
         font-size: 11px;
-        font-weight: 950;
-        animation: eyebrowSlide 0.6s ease both;
+        font-weight: 900;
       }
-      @keyframes eyebrowSlide {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .hero-card h2 { position: relative; z-index: 1; margin: 11px 0 8px; font-size: clamp(34px, 9vw, 52px); line-height: .92; letter-spacing: -0.05em; font-weight: 800; font-family: var(--serif); background: linear-gradient(140deg, #ffffff 0%, #c7e3ff 45%, #75b9ff 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 10px 28px rgba(0,82,255,.25); }
-      .hero-card p { position: relative; z-index: 1; margin: 0; color: #d6e3f7; font-size: 14px; line-height: 1.65; max-width: 420px; font-weight: 500; }
-      .hero-metrics { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
-      .metric { 
-        padding: 12px; 
-        border-radius: 16px; 
-        background: rgba(10, 21, 37, 0.44); 
-        border: 1px solid rgba(148, 163, 184, 0.2);
-        transition: all 0.3s ease;
-        animation: metricFadeIn 0.6s ease both;
-      }
-      .metric:hover {
-        background: rgba(10, 21, 37, 0.6);
-        border-color: rgba(67,181,255,.3);
-        transform: translateY(-2px);
-      }
-      .metric:nth-child(1) { animation-delay: 0.1s; }
-      .metric:nth-child(2) { animation-delay: 0.2s; }
-      .metric:nth-child(3) { animation-delay: 0.3s; }
-      @keyframes metricFadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .metric b { display: block; font-size: 14px; line-height: 1; font-weight: 800; }
-      .metric span { display: block; margin-top: 5px; color: #adc2df; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; }
+      .hero-card h2 { margin: 12px 0 10px; font-size: clamp(36px, 7vw, 70px); line-height: .92; letter-spacing: -.07em; font-weight: 800; background: linear-gradient(140deg, #fff 0%, #fff1bf 38%, #8ec7ff 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .hero-card p { margin: 0; color: #d8e5f8; font-size: 14px; line-height: 1.7; font-weight: 500; max-width: 620px; }
+      .hero-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 18px; max-width: 620px; }
+      .metric { padding: 13px; border-radius: 18px; background: rgba(2,8,23,.30); border: 1px solid rgba(148,163,184,.16); }
+      .metric b { display: block; font-size: 15px; font-weight: 800; }
+      .metric span { display: block; margin-top: 5px; color: #aebed4; font-size: 10px; font-weight: 700; letter-spacing: .10em; text-transform: uppercase; }
 
-      .grid { display: grid; gap: 12px; margin-top: 12px; }
+      .deploy-grid { display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(320px, .98fr); gap: 14px; align-items: start; }
       .panel {
-        border: 1px solid rgba(148, 163, 184, 0.2);
+        border: 1px solid rgba(148, 163, 184, 0.20);
         border-radius: var(--radius-xl);
-        background: linear-gradient(180deg, rgba(14, 25, 44, 0.82), rgba(11, 21, 37, 0.74));
-        box-shadow: 0 24px 64px rgba(1, 8, 20, 0.34), inset 0 1px rgba(255,255,255,.06);
+        background: linear-gradient(180deg, rgba(14, 25, 44, 0.82), rgba(7, 13, 25, 0.74));
+        box-shadow: 0 24px 68px rgba(0,0,0,.32), inset 0 1px rgba(255,255,255,.06);
         backdrop-filter: blur(20px);
         overflow: hidden;
-        animation: rise .45s ease both;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        animation: rise .58s ease both;
       }
-      .panel:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 28px 74px rgba(1, 8, 20, 0.44), inset 0 1px rgba(255,255,255,.09);
-      }
-      .panel:nth-child(2) { animation-delay: .04s; }
-      .panel:nth-child(3) { animation-delay: .08s; }
-      @keyframes rise { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
-      .panel-header { padding: 16px 16px 8px; }
-      .panel-header h2, .panel-header h3, .deploy-top h3, .wallet-top h3 { margin: 0; font-size: 17px; letter-spacing: -0.02em; font-weight: 800; }
-      .panel-header p { margin: 6px 0 0; color: #a5bad8; font-size: 13px; line-height: 1.6; font-weight: 500; }
-      .panel-body { padding: 12px 16px 16px; }
-      .stack { display: grid; gap: 12px; }
+      .panel-header { padding: 18px 18px 8px; }
+      .panel-header h2, .deploy-top h3, .wallet-top h3 { margin: 0; font-size: 17px; letter-spacing: -.025em; font-weight: 800; }
+      .panel-header p { margin: 7px 0 0; color: #a5b4cc; font-size: 13px; line-height: 1.6; font-weight: 500; }
+      .panel-body { padding: 12px 18px 18px; }
+      .stack { display: grid; gap: 13px; }
       .chip {
         width: max-content;
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        padding: 8px 10px;
+        gap: 8px;
+        padding: 8px 11px;
         border-radius: 999px;
-        color: #cfe5ff;
+        color: #dbeafe;
         background: rgba(0,82,255,.15);
-        border: 1px solid rgba(67,181,255,.22);
+        border: 1px solid rgba(67,181,255,.24);
         font-size: 12px;
         font-weight: 850;
-        animation: chipPulse 2s ease-in-out infinite;
       }
-      .chip::before { 
-        content: ""; 
-        width: 8px; 
-        height: 8px; 
-        border-radius: 50%; 
-        background: var(--green); 
-        box-shadow: 0 0 16px rgba(46,229,157,.9);
-        animation: dotPulse 1.5s ease-in-out infinite;
-      }
-      @keyframes chipPulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.02); }
-      }
-      @keyframes dotPulse {
-        0%, 100% { box-shadow: 0 0 16px rgba(46,229,157,.9); }
-        50% { box-shadow: 0 0 24px rgba(46,229,157,1); }
-      }
-      .field { display: grid; gap: 7px; }
-      label { display: flex; justify-content: space-between; gap: 10px; color: #d9e7ff; font-size: 13px; font-weight: 850; }
-      .mini { color: var(--muted-2); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+      .chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 18px rgba(52,211,153,.9); }
+      .field { display: grid; gap: 8px; }
+      label { display: flex; justify-content: space-between; gap: 10px; color: #e6eefc; font-size: 13px; font-weight: 800; }
+      .mini { color: var(--muted-2); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .10em; }
       input, select, textarea.code {
         width: 100%;
         border: 1px solid rgba(255,255,255,.09);
         border-radius: 18px;
-        background: rgba(2, 8, 23, .34);
+        background: rgba(2, 8, 23, .35);
         color: var(--text);
         outline: none;
         transition: border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .18s ease;
       }
-      input:hover, select:hover, textarea.code:hover {
-        border-color: rgba(255,255,255,.14);
-        background: rgba(2, 8, 23, .42);
-      }
-      input, select { height: 54px; padding: 0 14px; font-size: 15px; font-weight: 600; }
-      select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, #93c5fd 50%), linear-gradient(135deg, #93c5fd 50%, transparent 50%); background-position: calc(100% - 19px) 23px, calc(100% - 13px) 23px; background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; }
-      input:focus, select:focus, textarea.code:focus { 
-        border-color: rgba(67,181,255,.58); 
-        box-shadow: 0 0 0 4px rgba(0,82,255,.14); 
-        background: rgba(2,8,23,.48);
-        transform: translateY(-1px);
-      }
+      input, select { height: 56px; padding: 0 15px; font-size: 15px; font-weight: 650; }
+      input:focus, select:focus, textarea.code:focus { border-color: rgba(246,199,107,.54); box-shadow: 0 0 0 4px rgba(246,199,107,.13); background: rgba(2,8,23,.50); transform: translateY(-1px); }
+      select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, #f6c76b 50%), linear-gradient(135deg, #f6c76b 50%, transparent 50%); background-position: calc(100% - 19px) 24px, calc(100% - 13px) 24px; background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; }
       .hint { color: var(--muted); font-size: 12px; line-height: 1.45; }
       .split { display: flex; gap: 8px; flex-wrap: wrap; }
       .split > * { flex: 1; }
@@ -340,438 +325,267 @@
       .btn {
         min-height: 48px;
         border: 0;
-        border-radius: 15px;
+        border-radius: 16px;
         padding: 0 15px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
         color: var(--text);
-        font-weight: 700;
+        font-weight: 800;
         font-size: 14px;
         text-decoration: none;
-        letter-spacing: -0.01em;
+        letter-spacing: -.01em;
         transition: transform .16s ease, opacity .16s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease;
         position: relative;
         overflow: hidden;
       }
-      .btn::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-      .btn:hover::before {
-        opacity: 1;
-      }
-      .btn:hover {
-        transform: translateY(-1px);
-      }
+      .btn::before { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent, rgba(255,255,255,.16), transparent); transform: translateX(-130%); transition: transform .5s ease; }
+      .btn:hover::before { transform: translateX(130%); }
+      .btn:hover { transform: translateY(-1px); }
       .btn:active { transform: scale(.98); }
-      .btn.deploy-success {
-        animation: successPop .45s ease;
-        box-shadow: 0 0 0 4px rgba(56,228,160,.22), 0 15px 34px rgba(56,228,160,.25);
-      }
-      @keyframes successPop {
-        0% { transform: scale(.97); }
-        45% { transform: scale(1.03); }
-        100% { transform: scale(1); }
-      }
-      .btn.primary { 
-        background: linear-gradient(135deg, #0052ff, #43b5ff); 
-        box-shadow: 0 15px 34px rgba(0,82,255,.28); 
-        color: white;
-        animation: btnGradient 3s ease infinite;
-        background-size: 200% 200%;
-      }
-      @keyframes btnGradient {
-        0%, 100% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-      }
-      .btn.primary:hover {
-        box-shadow: 0 18px 42px rgba(0,82,255,.38);
-      }
+      .btn.primary { background: linear-gradient(135deg, #0052ff, #43b5ff); box-shadow: 0 18px 42px rgba(0,82,255,.30); color: white; }
+      .btn.gold { background: linear-gradient(135deg, #f6c76b, #8ec7ff 48%, #0052ff); box-shadow: 0 20px 48px rgba(0,82,255,.34), 0 0 0 1px rgba(255,255,255,.10) inset; color: #fff; }
       .btn.ghost { background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.09); box-shadow: none; color: #dbeafe; }
       .btn.small { min-height: 38px; border-radius: 14px; padding: 0 12px; font-size: 12px; }
       .btn:disabled { opacity: .55; cursor: not-allowed; }
       .btn.loading::after { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.32); border-top-color: white; animation: spin .8s linear infinite; }
-      @keyframes spin { to { transform: rotate(360deg); } }
-      
-      /* Particle effect overlay */
-      .app::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 0;
-        background-image: 
-          radial-gradient(circle at 20% 30%, rgba(67, 181, 255, 0.03) 0%, transparent 50%),
-          radial-gradient(circle at 80% 70%, rgba(0, 82, 255, 0.04) 0%, transparent 50%),
-          radial-gradient(circle at 40% 80%, rgba(67, 181, 255, 0.02) 0%, transparent 50%);
-        animation: particleFloat 20s ease-in-out infinite;
-      }
-      @keyframes particleFloat {
-        0%, 100% { transform: translate(0, 0) scale(1); }
-        33% { transform: translate(30px, -30px) scale(1.1); }
-        66% { transform: translate(-20px, 20px) scale(0.9); }
-      }
+      .btn.deploy-success { animation: successPop .45s ease; box-shadow: 0 0 0 4px rgba(52,211,153,.20), 0 15px 34px rgba(52,211,153,.22); }
 
-      .console { display: grid; gap: 12px; }
-      .wallet-card, .deploy-card, .history-card, .code-shell {
-        border: 1px solid rgba(148, 163, 184, 0.18);
-        border-radius: var(--radius-lg);
-        background: linear-gradient(180deg, rgba(12, 22, 38, 0.58), rgba(10, 18, 32, 0.5));
-        overflow: hidden;
-        transition: all 0.3s ease;
-      }
-      .wallet-card:hover, .deploy-card:hover, .history-card:hover {
-        border-color: rgba(148, 163, 184, 0.28);
-        background: linear-gradient(180deg, rgba(12, 22, 38, 0.68), rgba(10, 18, 32, 0.6));
-        box-shadow: 0 8px 24px rgba(0, 82, 255, 0.1);
-      }
-      .wallet-card { padding: 14px; }
+      .console { display: grid; gap: 13px; }
+      .wallet-card, .deploy-card, .history-card, .code-shell { border: 1px solid rgba(148, 163, 184, 0.16); border-radius: var(--radius-lg); background: linear-gradient(180deg, rgba(12,22,38,.58), rgba(7,13,25,.50)); overflow: hidden; }
+      .wallet-card, .deploy-card, .history-card { padding: 14px; }
       .wallet-top, .deploy-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-      .status {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 9px;
-        border-radius: 999px;
-        color: #cbd5e1;
-        background: rgba(148,163,184,.10);
-        border: 1px solid rgba(148,163,184,.14);
-        font-size: 11px;
-        font-weight: 900;
-        transition: all 0.3s ease;
-      }
-      .status.good { 
-        color: #bbf7d0; 
-        background: rgba(34,197,94,.13); 
-        border-color: rgba(34,197,94,.22);
-        animation: statusSuccess 0.5s ease;
-      }
-      .status.warn { 
-        color: #fde68a; 
-        background: rgba(245,158,11,.12); 
-        border-color: rgba(245,158,11,.22);
-        animation: statusWarn 0.5s ease;
-      }
-      @keyframes statusSuccess {
-        0% { transform: scale(0.9); opacity: 0; }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); opacity: 1; }
-      }
-      @keyframes statusWarn {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-3px); }
-        75% { transform: translateX(3px); }
-      }
-      .kv { display: grid; gap: 8px; }
-      .kv-row { display: grid; grid-template-columns: 86px 1fr; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid rgba(255,255,255,.065); transition: all 0.3s ease; }
+      .status { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; border-radius: 999px; color: #cbd5e1; background: rgba(148,163,184,.10); border: 1px solid rgba(148,163,184,.14); font-size: 11px; font-weight: 900; }
+      .status.good { color: #bbf7d0; background: rgba(34,197,94,.13); border-color: rgba(34,197,94,.22); }
+      .status.warn { color: #fde68a; background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.22); }
+      .kv { display: grid; gap: 2px; }
+      .kv-row { display: grid; grid-template-columns: 82px 1fr; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid rgba(255,255,255,.065); }
       .kv-row:first-child { border-top: 0; }
-      .kv-row:hover {
-        background: rgba(67, 181, 255, 0.05);
-        padding-left: 8px;
-        margin-left: -8px;
-        margin-right: -8px;
-        padding-right: 8px;
-      }
-      .kv-row span { color: #9db4d4; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
-      .kv-row code { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #edf4ff; font-size: 12px; font-weight: 650; transition: color 0.3s ease; }
-      .kv-row:hover code { color: #fff; }
+      .kv-row span { color: #8fa2bd; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .10em; }
+      .kv-row code { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #edf4ff; font-size: 12px; font-weight: 650; }
       .deploy-actions { position: sticky; bottom: 10px; z-index: 4; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; padding-top: 4px; }
-      #deploy-btn { grid-column: 1 / -1; min-height: 56px; font-size: 16px; }
-
-      .deploy-card, .history-card { padding: 14px; }
-      .log {
-        min-height: 98px;
-        max-height: 160px;
-        overflow: auto;
-        border-radius: 18px;
-        padding: 10px;
-        background: rgba(2,8,23,.42);
-        border: 1px solid rgba(255,255,255,.06);
-      }
-      .log-line { color: #a8bad6; font-family: var(--mono); font-size: 11px; line-height: 1.55; padding: 3px 0; overflow-wrap: anywhere; animation: logFadeIn 0.3s ease; }
-      .log-line.good { color: #86efac; animation: logSuccess 0.5s ease; }
-      .log-line.warn { color: #fde68a; animation: logWarn 0.4s ease; }
-      .log-line.bad { color: #fda4af; animation: logError 0.5s ease; }
-      @keyframes logFadeIn {
-        from { opacity: 0; transform: translateX(-10px); }
-        to { opacity: 1; transform: translateX(0); }
-      }
-      @keyframes logSuccess {
-        0% { opacity: 0; transform: translateX(-10px) scale(0.95); }
-        50% { transform: translateX(2px) scale(1.02); }
-        100% { opacity: 1; transform: translateX(0) scale(1); }
-      }
-      @keyframes logWarn {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-2px); }
-        75% { transform: translateX(2px); }
-      }
-      @keyframes logError {
-        0% { opacity: 0; transform: translateX(-10px); }
-        20%, 40%, 60% { transform: translateX(2px); }
-        30%, 50% { transform: translateX(-2px); }
-        100% { opacity: 1; transform: translateX(0); }
-      }
+      #deploy-btn { grid-column: 1 / -1; min-height: 58px; font-size: 16px; }
+      .log { min-height: 118px; max-height: 185px; overflow: auto; border-radius: 18px; padding: 10px; background: rgba(2,8,23,.42); border: 1px solid rgba(255,255,255,.06); }
+      .log-line { color: #a8bad6; font-family: var(--mono); font-size: 11px; line-height: 1.55; padding: 3px 0; overflow-wrap: anywhere; }
+      .log-line.good { color: #86efac; }
+      .log-line.warn { color: #fde68a; }
+      .log-line.bad { color: #fda4af; }
       .history-list { display: grid; gap: 9px; max-height: 290px; overflow: auto; }
-      .history-item { 
-        padding: 12px; 
-        border-radius: 18px; 
-        border: 1px solid rgba(255,255,255,.07); 
-        background: rgba(2,8,23,.26);
-        transition: all 0.3s ease;
-        animation: historySlideIn 0.4s ease both;
-      }
-      .history-item:hover {
-        border-color: rgba(67,181,255,.3);
-        background: rgba(2,8,23,.38);
-        transform: translateX(4px);
-        box-shadow: 0 8px 24px rgba(0,82,255,.15);
-      }
-      @keyframes historySlideIn {
-        from { opacity: 0; transform: translateX(-20px); }
-        to { opacity: 1; transform: translateX(0); }
-      }
+      .history-item { padding: 12px; border-radius: 18px; border: 1px solid rgba(255,255,255,.07); background: rgba(2,8,23,.26); }
       .history-item .title { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
-      .history-item strong { font-size: 13px; font-weight: 800; letter-spacing: -0.012em; }
+      .history-item strong { font-size: 13px; font-weight: 800; letter-spacing: -.012em; }
       .history-item .meta { margin-top: 7px; color: #a8bdd9; font-size: 12px; line-height: 1.58; overflow-wrap: anywhere; font-weight: 500; }
       .history-item .actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
       .empty { color: var(--muted); font-size: 13px; line-height: 1.55; padding: 14px; border: 1px dashed rgba(148,163,184,.18); border-radius: 18px; background: rgba(2,8,23,.22); text-align: center; }
-
-      .editor-panel { margin-bottom: 12px; }
+      .editor-panel { display: none !important; }
       .editor-toolbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
       .status-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
       .editor-wrap { padding-top: 8px; }
       .code-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px; border-bottom: 1px solid rgba(255,255,255,.07); }
       .code-head strong { display: block; font-size: 12px; }
       .code-head span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; font-family: var(--mono); }
-      textarea.code { min-height: 300px; resize: vertical; border: 0; border-radius: 0; padding: 14px; font-family: var(--mono); font-size: 11.5px; line-height: 1.55; color: #dce9ff; }
-      details.panel summary { list-style: none; cursor: pointer; transition: all 0.3s ease; }
-      details.panel summary::-webkit-details-marker { display: none; }
-      details.panel summary:hover {
-        background: rgba(67, 181, 255, 0.05);
-      }
-      details.panel .panel-header { display: flex; align-items: center; justify-content: space-between; }
-      details.panel .panel-header::after { content: "⌄"; color: var(--muted); font-weight: 900; transition: transform .18s ease; }
-      details.panel[open] .panel-header::after { transform: rotate(180deg); }
-      details.panel[open] {
-        animation: detailsExpand 0.3s ease;
-      }
-      @keyframes detailsExpand {
-        from { opacity: 0.8; }
-        to { opacity: 1; }
-      }
+      textarea.code { min-height: 260px; resize: vertical; border: 0; border-radius: 0; padding: 14px; font-family: var(--mono); font-size: 11.5px; line-height: 1.55; color: #dce9ff; }
 
-      .toast {
-        position: fixed;
-        left: 50%;
-        bottom: 18px;
-        z-index: 999;
-        transform: translateX(-50%);
-        width: min(440px, calc(100vw - 28px));
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 14px;
-        border-radius: 18px;
-        border: 1px solid rgba(67,181,255,.25);
-        background: rgba(10, 20, 35, .94);
-        box-shadow: 0 18px 52px rgba(0,0,0,.42);
-        backdrop-filter: blur(16px);
-        animation: toastIn .22s ease both;
-      }
+      .toast { position: fixed; left: 50%; bottom: 18px; z-index: 999; transform: translateX(-50%); width: min(440px, calc(100vw - 28px)); display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 18px; border: 1px solid rgba(246,199,107,.24); background: rgba(10,20,35,.95); box-shadow: 0 18px 52px rgba(0,0,0,.42); backdrop-filter: blur(16px); animation: toastIn .22s ease both; }
       .toast.hiding { animation: toastOut .22s ease both; }
-      .toast-icon { 
-        width: 28px; 
-        height: 28px; 
-        display: grid; 
-        place-items: center; 
-        flex: 0 0 auto; 
-        border-radius: 10px; 
-        background: rgba(0,82,255,.18); 
-        color: #bfdbfe; 
-        font-weight: 950;
-        animation: iconBounce 0.5s ease;
-      }
-      @keyframes iconBounce {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.2); }
-      }
+      .toast-icon { width: 28px; height: 28px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 10px; background: rgba(246,199,107,.16); color: #ffe7aa; font-weight: 950; }
       .toast-content { min-width: 0; color: #e5efff; font-size: 13px; font-weight: 750; }
-      @keyframes toastIn { 
-        from { opacity: 0; transform: translate(-50%, 16px) scale(0.95); } 
-        to { opacity: 1; transform: translate(-50%, 0) scale(1); } 
-      }
-      @keyframes toastOut { 
-        to { opacity: 0; transform: translate(-50%, 16px) scale(0.95); } 
-      }
+      @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 16px) scale(.95); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+      @keyframes toastOut { to { opacity: 0; transform: translate(-50%, 16px) scale(.95); } }
 
-      .hidden-control { display: none !important; }
-      @media (min-width: 860px) {
-        .topbar-inner, .layout { width: min(760px, 100%); }
-        .grid { grid-template-columns: 1fr 1fr; align-items: start; }
-        .panel:first-child { grid-column: 1; }
-        .console-panel { grid-column: 2; grid-row: 1 / span 2; }
-        .editor-panel { grid-column: 1 / -1; }
+      .hidden-control, .utility-hidden, #share-deploy-btn { display: none !important; }
+      @media (max-width: 920px) {
+        .shell { display: block; padding: 12px; }
+        .sidebar { position: relative; top: auto; height: auto; min-height: 0; padding: 12px; margin-bottom: 12px; border-radius: 26px; }
+        .sidebar .brand, .sidebar-foot { display: none; }
+        .nav-label { display: none; }
+        .nav-item { min-height: 50px; border-radius: 18px; }
+        .content { gap: 12px; }
+        .mobile-brand { display: flex; }
+        .deploy-grid { grid-template-columns: 1fr; }
       }
-      @media (max-width: 430px) {
-        .topbar-inner { padding: 10px; }
-        .layout { padding: 10px 10px 92px; }
-        .hero-card { padding: 16px; border-radius: 26px; }
-        .hero-card h2 { font-size: 34px; }
+      @media (max-width: 520px) {
+        .shell { padding: 10px; }
+        .topbar { border-radius: 24px; padding: 10px; }
+        .top-actions { gap: 6px; }
+        .pill:first-child { display: none; }
+        .btn.primary:not(#deploy-btn) { min-width: 96px; }
+        .hero-card { padding: 18px; border-radius: 26px; }
+        .hero-card h2 { font-size: 38px; }
         .hero-metrics { grid-template-columns: 1fr; }
         .panel { border-radius: 26px; }
         .deploy-actions { grid-template-columns: 1fr; }
-        #deploy-btn { min-height: 54px; }
-        .pill:first-child { display: none; }
+        #deploy-btn { min-height: 56px; }
       }
     </style>
   </head>
   <body>
     <div class="app">
-      <header class="topbar">
-        <div class="topbar-inner">
+      <div class="shell">
+        <aside class="sidebar" aria-label="Deploy menu">
           <div class="brand">
             <div class="logo">B</div>
             <div>
               <h1>Deploy on Base</h1>
-              <p>Mini App token deployer</p>
+              <p>Token deploy console</p>
             </div>
           </div>
-          <div class="top-actions">
-            <div class="pill"><strong>Network</strong><span id="network-pill">Base Mainnet</span></div>
-            <div class="pill"><strong>Wallet</strong><span id="wallet-pill">Not connected</span></div>
-            <button id="connect-btn" class="btn primary">Connect</button>
-          </div>
-        </div>
-      </header>
+          <div class="nav-label">Menu</div>
+          <nav class="nav" aria-label="Primary">
+            <button class="nav-item" type="button" aria-current="page">
+              <span class="nav-icon">⚡</span>
+              <span>
+                <span class="nav-title">Deploy Token</span>
+                <span class="nav-sub">ERC20 on Base</span>
+              </span>
+            </button>
+          </nav>
+          <div class="sidebar-foot"><b>Focused mode:</b> only deploy essentials are visible. No noisy tools, no extra menus.</div>
+        </aside>
 
-      <main class="layout">
-        <section class="hero-card" aria-labelledby="hero-title">
-          <span class="eyebrow">Base Mainnet · ERC20</span>
-          <h2 id="hero-title">Deploy a token in one clean flow.</h2>
-          <p>Fill token details, connect your Farcaster wallet, and deploy directly on Base without leaving the Mini App.</p>
-        </section>
-
-        <div class="grid">
-          <aside class="panel">
-            <div class="panel-header">
-              <h2>Token setup</h2>
-              <p>Only the fields needed to launch. Advanced source is tucked below.</p>
-            </div>
-            <div class="panel-body stack">
-              <div class="chip">Deploy ready</div>
-              <select id="template-select" class="hidden-control" aria-hidden="true"><option value="erc20" selected>ERC20 Token</option></select>
-              <div class="field">
-                <label for="token-name"><span>Token name</span><span class="mini">Required</span></label>
-                <input id="token-name" type="text" placeholder="Base Token" value="Base Token" autocomplete="off" />
-              </div>
-              <div class="field">
-                <label for="token-symbol"><span>Token symbol</span><span class="mini">Ticker</span></label>
-                <input id="token-symbol" type="text" maxlength="8" placeholder="BASE" value="BASE" autocomplete="off" />
-              </div>
-              <div class="field">
-                <label for="initial-supply"><span>Initial supply</span><span class="mini">18 decimals</span></label>
-                <input id="initial-supply" type="number" min="1" step="1" inputmode="numeric" placeholder="1000000" value="1000000" />
-                <div class="hint">Enter a whole number. The contract mints supply using 18 decimals.</div>
-              </div>
-              <div class="field">
-                <label for="chain-select"><span>Target chain</span><span class="mini">Choose</span></label>
-                <select id="chain-select">
-                  <option value="base" selected>Base Mainnet (8453)</option>
-                  <option value="base-sepolia">Base Sepolia (84532)</option>
-                </select>
-              </div>
-              <div class="split hidden-control" aria-hidden="true">
-                <button id="fill-sample-btn" class="btn ghost small">Fill sample</button>
-                <button id="reset-btn" class="btn ghost small">Reset</button>
+        <main class="content">
+          <header class="topbar">
+            <div class="mobile-brand">
+              <div class="logo">B</div>
+              <div>
+                <h1>Deploy on Base</h1>
               </div>
             </div>
-          </aside>
-
-          <section class="panel console-panel">
-            <div class="panel-header">
-              <h2>Deploy console</h2>
-              <p>Wallet, transaction, contract address, and local deployment history.</p>
+            <div class="top-actions">
+              <div class="pill"><strong>Network</strong><span id="network-pill">Base Mainnet</span></div>
+              <div class="pill"><strong>Wallet</strong><span id="wallet-pill">Not connected</span></div>
+              <button id="connect-btn" class="btn primary">Connect</button>
             </div>
-            <div class="panel-body console">
-              <div class="wallet-card">
-                <div class="wallet-top">
-                  <h3>Launch status</h3>
-                  <span id="connection-state" class="status">Disconnected</span>
-                </div>
-                <div class="kv">
-                  <div class="kv-row"><span>Address</span><code id="wallet-address">—</code></div>
-                  <div class="kv-row"><span>Chain</span><code id="wallet-chain">Base Mainnet</code></div>
-                  <div class="kv-row"><span>Tx hash</span><code id="tx-hash">—</code></div>
-                  <div class="kv-row"><span>Contract</span><code id="contract-address">—</code></div>
-                </div>
-                <div class="deploy-actions">
-                  <button id="deploy-btn" class="btn primary">Deploy Token</button>
-                  <button id="deploy-5-btn" class="btn ghost hidden-control" aria-hidden="true">Deploy x5</button>
-                  <button id="copy-address-btn" class="btn ghost">Copy address</button>
-                  <button id="open-basescan-btn" class="btn ghost" style="display:none;">Open BaseScan</button>
-                  <button id="share-deploy-btn" class="btn ghost" style="display:none;">Share deploy</button>
-                </div>
-              </div>
+          </header>
 
-              <div class="deploy-card">
-                <div class="deploy-top">
-                  <h3>Status log</h3>
-                  <span class="mini">Live</span>
-                </div>
-                <div id="log" class="log" aria-live="polite">
-                  <div class="log-line info">[info] Ready. Connect wallet to start.</div>
-                </div>
-              </div>
-
-              <div class="history-card">
-                <div class="deploy-top">
-                  <h3>Recent deploys</h3>
-                  <button id="clear-history-btn" class="btn small ghost">Clear</button>
-                </div>
-                <div id="history-list" class="history-list">
-                  <div class="empty">No deployments yet. Successful deployments will appear here.</div>
-                </div>
+          <section class="hero-card" aria-labelledby="hero-title">
+            <div class="hero-inner">
+              <span class="eyebrow">Base Mainnet · Deploy Token</span>
+              <h2 id="hero-title">Launch your token in one clean flow.</h2>
+              <p>A focused deploy-only Mini App inspired by the Base Score premium style: sharp hierarchy, animated glow, and just the controls you actually need.</p>
+              <div class="hero-metrics" aria-label="Deploy highlights">
+                <div class="metric"><b>ERC20</b><span>Token standard</span></div>
+                <div class="metric"><b>Base</b><span>Mainnet ready</span></div>
+                <div class="metric"><b>1 Flow</b><span>No clutter</span></div>
               </div>
             </div>
           </section>
 
-          <details class="panel editor-panel">
-            <summary class="panel-header">
-              <div>
-                <h2>Advanced contract engine</h2>
-                <p>Generated Solidity preview, artifact status, and compile controls.</p>
+          <div class="deploy-grid">
+            <section class="panel" aria-labelledby="setup-title">
+              <div class="panel-header">
+                <h2 id="setup-title">Token setup</h2>
+                <p>Enter the token details, connect your wallet, then deploy directly to Base.</p>
               </div>
-            </summary>
-            <div class="panel-body editor-wrap">
-              <div class="editor-toolbar" style="margin-bottom:10px;">
-                <div class="status-row">
-                  <span id="compile-status" class="status warn">Waiting for contract template</span>
-                  <span id="artifact-status" class="status">Loading artifact...</span>
+              <div class="panel-body stack">
+                <div class="chip">Deploy ready</div>
+                <select id="template-select" class="hidden-control" aria-hidden="true"><option value="erc20" selected>ERC20 Token</option></select>
+                <div class="field">
+                  <label for="token-name"><span>Token name</span><span class="mini">Required</span></label>
+                  <input id="token-name" type="text" placeholder="Base Token" value="Base Token" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label for="token-symbol"><span>Token symbol</span><span class="mini">Ticker</span></label>
+                  <input id="token-symbol" type="text" maxlength="8" placeholder="BASE" value="BASE" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label for="initial-supply"><span>Initial supply</span><span class="mini">18 decimals</span></label>
+                  <input id="initial-supply" type="number" min="1" step="1" inputmode="numeric" placeholder="1000000" value="1000000" />
+                  <div class="hint">Use a whole number. The contract mints supply using 18 decimals.</div>
+                </div>
+                <div class="field hidden-control" aria-hidden="true">
+                  <label for="chain-select"><span>Target chain</span><span class="mini">Base</span></label>
+                  <select id="chain-select">
+                    <option value="base" selected>Base Mainnet (8453)</option>
+                  </select>
+                </div>
+                <div class="split hidden-control" aria-hidden="true">
+                  <button id="fill-sample-btn" class="btn ghost small">Fill sample</button>
+                  <button id="reset-btn" class="btn ghost small">Reset</button>
                 </div>
               </div>
-              <div class="code-shell">
-                <div class="code-head">
-                  <div>
-                    <strong>contracts/ERC20Token.sol</strong>
-                    <span id="source-meta">generated preview</span>
+            </section>
+
+            <section class="panel console-panel" aria-labelledby="console-title">
+              <div class="panel-header">
+                <h2 id="console-title">Deploy console</h2>
+                <p>Track wallet connection, transaction hash, contract address, and status logs.</p>
+              </div>
+              <div class="panel-body console">
+                <div class="wallet-card">
+                  <div class="wallet-top">
+                    <h3>Launch status</h3>
+                    <span id="connection-state" class="status">Disconnected</span>
                   </div>
-                  <button id="compile-btn" class="btn small ghost">Refresh</button>
+                  <div class="kv">
+                    <div class="kv-row"><span>Address</span><code id="wallet-address">—</code></div>
+                    <div class="kv-row"><span>Chain</span><code id="wallet-chain">Base Mainnet</code></div>
+                    <div class="kv-row"><span>Tx hash</span><code id="tx-hash">—</code></div>
+                    <div class="kv-row"><span>Contract</span><code id="contract-address">—</code></div>
+                  </div>
+                  <div class="deploy-actions">
+                    <button id="deploy-btn" class="btn gold">Deploy Token</button>
+                    <button id="deploy-5-btn" class="btn ghost hidden-control" aria-hidden="true">Deploy x5</button>
+                    <button id="copy-address-btn" class="btn ghost">Copy address</button>
+                    <button id="open-basescan-btn" class="btn ghost" style="display:none;">Open BaseScan</button>
+                    <button id="share-deploy-btn" class="btn ghost" style="display:none;">Share deploy</button>
+                  </div>
                 </div>
-                <textarea id="source-preview" class="code" readonly spellcheck="false">Loading source...</textarea>
+
+                <div class="deploy-card">
+                  <div class="deploy-top">
+                    <h3>Status log</h3>
+                    <span class="mini">Live</span>
+                  </div>
+                  <div id="log" class="log" aria-live="polite">
+                    <div class="log-line info">[info] Ready. Connect wallet to start.</div>
+                  </div>
+                </div>
+
+                <div class="history-card utility-hidden" aria-hidden="true">
+                  <div class="deploy-top">
+                    <h3>Recent deploys</h3>
+                    <button id="clear-history-btn" class="btn small ghost">Clear</button>
+                  </div>
+                  <div id="history-list" class="history-list">
+                    <div class="empty">No deployments yet. Successful deployments will appear here.</div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </details>
-        </div>
-      </main>
+            </section>
+
+            <details class="panel editor-panel" aria-hidden="true">
+              <summary class="panel-header">
+                <div>
+                  <h2>Advanced contract engine</h2>
+                  <p>Hidden in focused deploy mode.</p>
+                </div>
+              </summary>
+              <div class="panel-body editor-wrap">
+                <div class="editor-toolbar" style="margin-bottom:10px;">
+                  <div class="status-row">
+                    <span id="compile-status" class="status warn">Waiting for contract template</span>
+                    <span id="artifact-status" class="status">Loading artifact...</span>
+                  </div>
+                </div>
+                <div class="code-shell">
+                  <div class="code-head">
+                    <div>
+                      <strong>contracts/ERC20Token.sol</strong>
+                      <span id="source-meta">generated preview</span>
+                    </div>
+                    <button id="compile-btn" class="btn small ghost">Refresh</button>
+                  </div>
+                  <textarea id="source-preview" class="code" readonly spellcheck="false">Loading source...</textarea>
+                </div>
+              </div>
+            </details>
+          </div>
+        </main>
+      </div>
     </div>
 
-    <script type="module" src="./app.js?v=12"></script>
+    <script type="module" src="./app.js?v=13"></script>
   </body>
 </html>
