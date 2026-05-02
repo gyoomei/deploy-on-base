@@ -174,20 +174,25 @@ function log(level, message) {
 function showToast(message, type = 'info') {
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  
+
   const icons = {
     success: '✓',
     error: '✗',
     info: 'ℹ',
   };
-  
+
   toast.innerHTML = `
     <div class="toast-icon">${icons[type] || icons.info}</div>
     <div class="toast-content">${escapeHtml(message)}</div>
   `;
-  
+
   document.body.appendChild(toast);
-  
+
+  if (navigator.vibrate) {
+    if (type === 'success') navigator.vibrate(18);
+    else if (type === 'error') navigator.vibrate([18, 30, 18]);
+  }
+
   setTimeout(() => {
     toast.classList.add('hiding');
     setTimeout(() => toast.remove(), 300);
@@ -500,6 +505,8 @@ async function deployOnce() {
     log('good', `Contract deployed: ${contractAddress}`);
     log('good', `Open on explorer: ${currentExplorerBase()}/address/${contractAddress}`);
     showToast(`Contract deployed: ${shortAddress(contractAddress)}`, 'success');
+    els.deployBtn.classList.add('deploy-success');
+    setTimeout(() => els.deployBtn.classList.remove('deploy-success'), 520);
 
     registerHistory({
       tokenName: draft.tokenName,
