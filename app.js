@@ -108,15 +108,32 @@ const storage = {
 };
 
 function isFarcasterClient() {
+  const params = new URLSearchParams(window.location.search);
   const referrer = document.referrer || '';
   const ua = navigator.userAgent || '';
   return (
+    params.has('miniApp') ||
+    params.has('miniapp') ||
+    params.has('fc_frame') ||
     window.parent !== window ||
     referrer.includes('warpcast.com') ||
     referrer.includes('farcaster.xyz') ||
     ua.includes('Farcaster') ||
     ua.includes('Warpcast')
   );
+}
+
+async function getFarcasterProvider() {
+  if (!sdk?.wallet?.getEthereumProvider) return null;
+  try {
+    return await Promise.race([
+      sdk.wallet.getEthereumProvider(),
+      new Promise((resolve) => setTimeout(() => resolve(null), 2500)),
+    ]);
+  } catch (error) {
+    console.warn('Farcaster provider unavailable, falling back to browser wallet', error);
+    return null;
+  }
 }
 
 function loadHistory() {
@@ -346,11 +363,8 @@ async function loadArtifacts() {
 
 async function getProvider() {
   if (isFarcasterClient() && sdk?.wallet?.getEthereumProvider) {
-    try {
-      return await sdk.wallet.getEthereumProvider();
-    } catch (error) {
-      console.warn('Farcaster provider unavailable, falling back to browser wallet', error);
-    }
+    const farcasterProvider = await getFarcasterProvider();
+    if (farcasterProvider?.request) return farcasterProvider;
   }
   if (window.ethereum?.request) return window.ethereum;
   throw new Error('Wallet provider not found. Open in Farcaster or use a browser wallet.');
@@ -379,8 +393,8 @@ async function switchNetwork(provider, chain) {
   }
 }
 
-async function connectWallet() {
-  const provider = await getProvider();
+async function connectWallet(providerOverride = null) {
+  const provider = providerOverride || await getProvider();
   const chain = activeChain();
   setStatus(els.connectionState, 'warn', 'Connecting...');
   els.connectBtn.classList.add('loading');
@@ -409,7 +423,11 @@ async function autoConnectWallet() {
   if (state.address || state.isAutoConnecting) return;
   state.isAutoConnecting = true;
   try {
-    await connectWallet();
+    const provider = await getFarcasterProvider();
+    if (!provider?.request) return;
+    const accounts = await provider.request({ method: 'eth_accounts' });
+    if (!accounts?.length) return;
+    await connectWallet(provider);
   } catch (error) {
     console.warn('Auto-connect skipped:', error);
   } finally {
@@ -674,11 +692,9 @@ async function loadFarcasterContext() { return; }
 
 async function init() {
   if (isFarcasterClient()) {
-    try {
-      await sdk.actions.ready();
-    } catch (error) {
+    sdk.actions.ready().catch((error) => {
       console.warn('sdk.actions.ready() failed:', error);
-    }
+    });
   }
 
   renderWallet();
