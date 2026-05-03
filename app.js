@@ -90,9 +90,38 @@ const els = {
   historyList: document.getElementById('history-list'),
 };
 
+const storage = {
+  get(key, fallback = '[]') {
+    try {
+      return window.localStorage?.getItem(key) || fallback;
+    } catch {
+      return fallback;
+    }
+  },
+  set(key, value) {
+    try {
+      window.localStorage?.setItem(key, value);
+    } catch {
+      // Ignore private-mode / restricted webview storage failures.
+    }
+  },
+};
+
+function isFarcasterClient() {
+  const referrer = document.referrer || '';
+  const ua = navigator.userAgent || '';
+  return (
+    window.parent !== window ||
+    referrer.includes('warpcast.com') ||
+    referrer.includes('farcaster.xyz') ||
+    ua.includes('Farcaster') ||
+    ua.includes('Warpcast')
+  );
+}
+
 function loadHistory() {
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const parsed = JSON.parse(storage.get(STORAGE_KEY, '[]'));
     return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
@@ -100,7 +129,7 @@ function loadHistory() {
 }
 
 function saveHistory() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history.slice(0, 25)));
+  storage.set(STORAGE_KEY, JSON.stringify(state.history.slice(0, 25)));
 }
 
 function activeChain() {
@@ -316,15 +345,15 @@ async function loadArtifacts() {
 }
 
 async function getProvider() {
-  if (sdk?.wallet?.getEthereumProvider) {
+  if (isFarcasterClient() && sdk?.wallet?.getEthereumProvider) {
     try {
       return await sdk.wallet.getEthereumProvider();
     } catch (error) {
-      console.warn('Farcaster provider unavailable, falling back to window.ethereum', error);
+      console.warn('Farcaster provider unavailable, falling back to browser wallet', error);
     }
   }
   if (window.ethereum?.request) return window.ethereum;
-  throw new Error('Wallet provider not found. Open in Farcaster or install MetaMask.');
+  throw new Error('Wallet provider not found. Open in Farcaster or use a browser wallet.');
 }
 
 async function switchNetwork(provider, chain) {
@@ -644,14 +673,18 @@ function wireHistoryActions() {
 async function loadFarcasterContext() { return; }
 
 async function init() {
-  try {
-    await sdk.actions.ready();
-  } catch (error) {
-    console.warn('sdk.actions.ready() failed (fine outside Farcaster):', error);
+  if (isFarcasterClient()) {
+    try {
+      await sdk.actions.ready();
+    } catch (error) {
+      console.warn('sdk.actions.ready() failed:', error);
+    }
   }
 
   renderWallet();
-  await autoConnectWallet();
+  if (isFarcasterClient()) {
+    await autoConnectWallet();
+  }
   renderWallet();
   renderHistory();
   wireHistoryActions();
