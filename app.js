@@ -88,6 +88,12 @@ const els = {
   artifactStatus: document.getElementById('artifact-status'),
   log: document.getElementById('log'),
   historyList: document.getElementById('history-list'),
+  heroTokenCoin: document.getElementById('hero-token-coin'),
+  heroTokenName: document.getElementById('hero-token-name'),
+  heroTokenSymbol: document.getElementById('hero-token-symbol'),
+  previewTokenCoin: document.getElementById('preview-token-coin'),
+  previewTokenName: document.getElementById('preview-token-name'),
+  previewTokenMeta: document.getElementById('preview-token-meta'),
 };
 
 const storage = {
@@ -179,6 +185,34 @@ function draftValues() {
   };
 }
 
+function formatSupply(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return value || '0';
+  return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(num);
+}
+
+function tokenInitial(symbol, name) {
+  const raw = (symbol || name || 'B').trim();
+  return raw.charAt(0).toUpperCase() || 'B';
+}
+
+function renderTokenPreview() {
+  if (!els.previewTokenName) return;
+  const draft = draftValues();
+  const tokenName = draft.tokenName || DEFAULTS.tokenName;
+  const tokenSymbol = (draft.tokenSymbol || DEFAULTS.tokenSymbol).toUpperCase();
+  const initial = tokenInitial(tokenSymbol, tokenName);
+  const supply = formatSupply(draft.initialSupply || DEFAULTS.initialSupply);
+  const chain = activeChain();
+
+  els.heroTokenCoin.textContent = initial;
+  els.previewTokenCoin.textContent = initial;
+  els.heroTokenName.textContent = tokenName;
+  els.previewTokenName.textContent = tokenName;
+  els.heroTokenSymbol.textContent = `${tokenSymbol} · ${supply} SUPPLY`;
+  els.previewTokenMeta.textContent = `${tokenSymbol} · ${supply} supply · ${chain.label}`;
+}
+
 function validateDraft(draft) {
   const errors = [];
   if (!draft.tokenName) errors.push('Token name is required.');
@@ -250,6 +284,7 @@ function toastLog(message) {
 }
 
 function renderSource() {
+  renderTokenPreview();
   if (!state.baseSource) return;
   const draft = draftValues();
   els.sourcePreview.value = generatePreviewSource(draft);
@@ -278,6 +313,7 @@ function renderWallet() {
   const chain = activeChain();
   els.networkPill.textContent = chain.label;
   els.walletChain.textContent = `${chain.label} (${chain.chainId})`;
+  renderTokenPreview();
 }
 
 function renderTransactionState(txHash = '—', contractAddress = '—') {
